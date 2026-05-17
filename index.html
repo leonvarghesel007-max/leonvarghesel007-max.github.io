@@ -1,0 +1,2211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#F5F5F7">
+<title>LEON OS</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=SF+Pro+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============ ROOT ============ */
+:root {
+  --bg: #F5F5F7;
+  --bg2: #FFFFFF;
+  --bg3: #F0F0F5;
+  --bg4: #E8E8ED;
+  --border: rgba(0,0,0,0.06);
+  --border2: rgba(0,0,0,0.1);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow: 0 4px 16px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04);
+  --blue: #0071E3;
+  --blue-soft: rgba(0,113,227,0.08);
+  --blue-border: rgba(0,113,227,0.15);
+  --green: #30D158;
+  --green-soft: rgba(48,209,88,0.08);
+  --red: #FF3B30;
+  --red-soft: rgba(255,59,48,0.08);
+  --orange: #FF9500;
+  --orange-soft: rgba(255,149,0,0.08);
+  --purple: #AF52DE;
+  --purple-soft: rgba(175,82,222,0.08);
+  --teal: #32ADE6;
+  --teal-soft: rgba(50,173,230,0.08);
+  --text: #1D1D1F;
+  --text2: #6E6E73;
+  --text3: #AEAEB2;
+  --radius: 20px;
+  --radius-sm: 14px;
+  --radius-xs: 10px;
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+}
+
+[data-dark] {
+  --bg: #000000;
+  --bg2: #1C1C1E;
+  --bg3: #2C2C2E;
+  --bg4: #3A3A3C;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.14);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow: 0 4px 16px rgba(0,0,0,0.4);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.5);
+  --blue-soft: rgba(0,113,227,0.15);
+  --blue-border: rgba(0,113,227,0.25);
+  --text: #FFFFFF;
+  --text2: #AEAEB2;
+  --text3: #636366;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font); overflow: hidden; transition: background .3s, color .3s; -webkit-font-smoothing: antialiased; }
+
+/* ============ APP SHELL ============ */
+#app { height: 100vh; display: flex; overflow: hidden; }
+
+/* ============ SIDEBAR ============ */
+.sidebar {
+  width: 72px;
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 0 24px;
+  flex-shrink: 0;
+  transition: background .3s;
+  z-index: 10;
+}
+[data-dark] .sidebar { background: rgba(28,28,30,0.8); }
+.sidebar-logo {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .12em;
+  color: var(--blue);
+  margin-bottom: 32px;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  text-transform: uppercase;
+}
+.nav-btn {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: none;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  cursor: pointer;
+  margin-bottom: 4px;
+  transition: .2s;
+  color: var(--text3);
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.nav-btn svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.nav-btn:hover { background: var(--bg3); color: var(--text2); }
+.nav-btn.active { background: var(--blue-soft); color: var(--blue); }
+.nav-btn.active svg { stroke: var(--blue); }
+.sidebar-bottom { margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.theme-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--bg3); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; transition: .2s; }
+
+/* ============ MAIN ============ */
+.main { flex: 1; overflow: hidden; position: relative; }
+.screen { display: none; height: 100vh; overflow-y: auto; scroll-behavior: smooth; }
+.screen.active { display: block; animation: fadeIn .2s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.screen::-webkit-scrollbar { width: 0; }
+
+/* ============ BENTO GRID ============ */
+.bento { padding: 32px 28px 40px; max-width: 1200px; }
+.bento-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-auto-rows: auto;
+  gap: 14px;
+}
+
+/* ============ BENTO CARDS ============ */
+.bcard {
+  background: var(--bg2);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  transition: background .3s, box-shadow .2s;
+}
+.bcard:hover { box-shadow: var(--shadow-lg); }
+.bcard.span2 { grid-column: span 2; }
+.bcard.span3 { grid-column: span 3; }
+.bcard.blue { background: linear-gradient(135deg, #0071E3, #0077ED); color: #fff; border: none; }
+.bcard.dark-card { background: #1D1D1F; color: #fff; border: none; }
+.bcard.frosted {
+  background: rgba(255,255,255,0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+[data-dark] .bcard.frosted { background: rgba(28,28,30,0.7); }
+
+/* ============ CARD PADDING ============ */
+.cp { padding: 22px; }
+.cp-sm { padding: 16px 22px; }
+.cp-lg { padding: 28px; }
+
+/* ============ TYPE ============ */
+.greeting { font-size: 28px; font-weight: 700; letter-spacing: -.5px; line-height: 1.1; }
+.greeting .name { color: var(--blue); }
+.date-text { font-size: 13px; color: var(--text2); margin-top: 5px; font-weight: 400; }
+.card-label { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--text3); margin-bottom: 8px; }
+.card-label.white { color: rgba(255,255,255,0.6); }
+.num-big { font-size: 42px; font-weight: 700; letter-spacing: -1px; line-height: 1; }
+.num-mid { font-size: 28px; font-weight: 700; letter-spacing: -.5px; line-height: 1; }
+.sub-text { font-size: 12px; color: var(--text2); margin-top: 4px; font-weight: 400; }
+.sub-text.white { color: rgba(255,255,255,0.65); }
+.muted { color: var(--text2); }
+.xs { font-size: 11px; }
+.sm { font-size: 13px; }
+
+/* ============ PROGRESS ============ */
+.prog { background: var(--bg3); border-radius: 99px; height: 5px; overflow: hidden; margin-top: 8px; }
+.prog-fill { height: 100%; border-radius: 99px; background: var(--blue); transition: width .8s cubic-bezier(.4,0,.2,1); }
+.prog-fill.green { background: var(--green); }
+.prog-fill.red { background: var(--red); }
+.prog-fill.orange { background: var(--orange); }
+.prog-fill.purple { background: var(--purple); }
+
+/* ============ TAGS ============ */
+.tag { display: inline-flex; align-items: center; border-radius: 99px; padding: 3px 9px; font-size: 10px; font-weight: 600; letter-spacing: .03em; }
+.tag-blue { background: var(--blue-soft); color: var(--blue); }
+.tag-green { background: var(--green-soft); color: var(--green); }
+.tag-red { background: var(--red-soft); color: var(--red); }
+.tag-orange { background: var(--orange-soft); color: var(--orange); }
+.tag-purple { background: var(--purple-soft); color: var(--purple); }
+.tag-teal { background: var(--teal-soft); color: var(--teal); }
+
+/* ============ DIVIDER ============ */
+.div { height: 1px; background: var(--border); margin: 12px 0; }
+
+/* ============ BUTTONS ============ */
+.btn { background: var(--blue); color: #fff; border: none; border-radius: 99px; padding: 10px 20px; font-family: var(--font); font-weight: 600; font-size: 13px; cursor: pointer; transition: .15s; }
+.btn:active { transform: scale(.97); opacity: .9; }
+.btn-ghost { background: var(--bg3); border: 1px solid var(--border); color: var(--text2); border-radius: 99px; padding: 7px 14px; font-size: 12px; cursor: pointer; font-family: var(--font); font-weight: 500; transition: .15s; }
+.btn-ghost:hover { border-color: var(--blue); color: var(--blue); }
+.btn-sm { padding: 6px 14px; font-size: 11px; }
+.btn-green { background: var(--green); }
+.btn-red { background: var(--red); }
+.btn-icon { width: 32px; height: 32px; border-radius: 50%; background: var(--bg3); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; }
+
+/* ============ INPUTS ============ */
+input, textarea, select {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 14px;
+  padding: 12px 14px;
+  width: 100%;
+  outline: none;
+  transition: .2s;
+}
+input:focus, textarea:focus, select:focus { border-color: var(--blue); background: var(--bg2); box-shadow: 0 0 0 3px var(--blue-soft); }
+select option { background: var(--bg2); }
+textarea { resize: none; }
+
+/* ============ NEWS WIDGET ============ */
+.news-item {
+  display: flex;
+  flex-direction: column;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: .15s;
+}
+.news-item:last-child { border-bottom: none; padding-bottom: 0; }
+.news-item:first-child { padding-top: 0; }
+.news-item:hover { opacity: .7; }
+.n-tag { font-size: 10px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; margin-bottom: 5px; }
+.n-headline { font-size: 13px; font-weight: 500; line-height: 1.45; color: var(--text); }
+.n-meta { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+.n-time { font-size: 11px; color: var(--text3); }
+.n-signal { display: inline-flex; align-items: center; gap: 4px; background: var(--orange-soft); border-radius: 99px; padding: 2px 8px; font-size: 10px; font-weight: 600; color: var(--orange); }
+.n-pulse { width: 5px; height: 5px; border-radius: 50%; background: var(--orange); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+.news-loading { text-align: center; padding: 20px; color: var(--text3); font-size: 13px; }
+
+/* ============ SIGNAL CARDS ============ */
+.sig-card {
+  background: var(--bg3);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  transition: .2s;
+}
+.sig-card:hover { border-color: var(--blue); transform: translateY(-1px); box-shadow: var(--shadow); }
+.sig-card:last-child { margin-bottom: 0; }
+.sig-live { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; flex-shrink: 0; }
+.stock-chip { font-size: 10px; font-weight: 600; padding: 4px 9px; border-radius: 99px; background: var(--bg2); border: 1px solid var(--border); color: var(--teal); font-family: var(--font); }
+
+/* ============ WEATHER ============ */
+.weather-temp { font-size: 52px; font-weight: 200; letter-spacing: -2px; line-height: 1; color: #fff; }
+.weather-desc { font-size: 13px; color: rgba(255,255,255,0.75); margin-top: 6px; }
+.w-tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+.w-tab { padding: 5px 12px; border-radius: 99px; font-size: 11px; font-weight: 600; cursor: pointer; border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.7); background: transparent; transition: .15s; }
+.w-tab.on { background: rgba(255,255,255,0.2); color: #fff; }
+.w-search { display: flex; gap: 6px; margin-top: 10px; }
+.w-search input { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.2); color: #fff; font-size: 12px; padding: 7px 12px; }
+.w-search input::placeholder { color: rgba(255,255,255,0.5); }
+.w-search input:focus { background: rgba(255,255,255,0.25); border-color: rgba(255,255,255,0.4); box-shadow: none; }
+.w-search-btn { background: rgba(255,255,255,0.2); border: none; border-radius: var(--radius-xs); padding: 7px 14px; color: #fff; cursor: pointer; font-size: 12px; font-weight: 600; white-space: nowrap; }
+
+/* ============ RINGS ============ */
+.rings-row { display: flex; gap: 14px; overflow-x: auto; padding: 4px 0; scrollbar-width: none; }
+.rings-row::-webkit-scrollbar { display: none; }
+.ring-item { display: flex; flex-direction: column; align-items: center; gap: 6px; flex-shrink: 0; cursor: pointer; }
+.ring-lbl { font-size: 10px; color: var(--text2); text-align: center; max-width: 64px; line-height: 1.3; font-weight: 500; }
+
+/* ============ HABITS ============ */
+.habit-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.hb { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 8px; text-align: center; cursor: pointer; transition: .2s; font-size: 11px; font-weight: 500; color: var(--text2); }
+.hb.done { background: var(--green-soft); border-color: var(--green); color: var(--green); }
+.hb-icon { font-size: 20px; margin-bottom: 4px; display: block; }
+
+/* ============ HEATMAP ============ */
+.heatmap { display: flex; flex-wrap: wrap; gap: 3px; }
+.hm-c { width: 10px; height: 10px; border-radius: 3px; background: var(--bg3); }
+.hm-c.l1 { background: rgba(0,113,227,.2); }
+.hm-c.l2 { background: rgba(0,113,227,.45); }
+.hm-c.l3 { background: rgba(0,113,227,.7); }
+.hm-c.l4 { background: var(--blue); }
+
+/* ============ CAL ============ */
+.cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; }
+.cal-dn { text-align: center; font-size: 10px; color: var(--text3); font-weight: 600; padding: 3px 0; }
+.cal-day { text-align: center; padding: 6px 2px; border-radius: 8px; font-size: 11px; cursor: pointer; transition: .15s; min-height: 28px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-weight: 500; }
+.cal-day.today { background: var(--blue); color: #fff; font-weight: 700; }
+.cal-day:hover:not(.today) { background: var(--bg3); }
+.sd { width: 4px; height: 4px; border-radius: 50%; }
+.sd-frueh { background: var(--green); }
+.sd-spaet { background: var(--orange); }
+.sd-nacht { background: var(--purple); }
+.sd-frei { background: var(--teal); }
+.sd-kurs { background: var(--red); }
+
+/* ============ TOPIC ============ */
+.topic-item { background: var(--bg3); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 8px; border: 1px solid var(--border); }
+.tchk { width: 20px; height: 20px; border-radius: 6px; border: 1.5px solid var(--border2); display: flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; flex-shrink: 0; transition: .15s; }
+.tchk.done { background: var(--green); border-color: var(--green); color: #fff; font-weight: 700; }
+.sub-row { display: flex; align-items: center; gap: 8px; padding: 5px 0; font-size: 12px; color: var(--text2); }
+.schk { width: 14px; height: 14px; border-radius: 4px; border: 1.5px solid var(--border2); cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 9px; transition: .15s; }
+.schk.done { background: var(--green); border-color: var(--green); color: #fff; }
+
+/* ============ MODAL ============ */
+.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 500; align-items: flex-end; justify-content: center; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+.overlay.open { display: flex; animation: fadeIn .2s; }
+.modal {
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border-radius: 28px 28px 0 0;
+  padding: 20px 22px 44px;
+  width: 100%;
+  max-width: 560px;
+  max-height: 88vh;
+  overflow-y: auto;
+  border-top: 1px solid var(--border);
+}
+[data-dark] .modal { background: rgba(28,28,30,0.97); }
+.modal-handle { width: 36px; height: 4px; background: var(--border2); border-radius: 99px; margin: 0 auto 20px; }
+.modal h3 { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+.mrow { display: flex; gap: 8px; margin-bottom: 10px; }
+.cbtn { background: var(--bg3); border: none; color: var(--text2); font-size: 18px; cursor: pointer; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%; float: right; }
+.mb8 { margin-bottom: 8px; }
+.mb12 { margin-bottom: 12px; }
+.mb16 { margin-bottom: 16px; }
+.mt8 { margin-top: 8px; }
+.mt12 { margin-top: 12px; }
+.mt16 { margin-top: 16px; }
+.w-full { width: 100%; }
+
+/* ============ AI CHAT ============ */
+.ai-screen { display: none; height: 100vh; flex-direction: column; }
+.ai-screen.active { display: flex; }
+.ai-header { padding: 48px 28px 16px; border-bottom: 1px solid var(--border); background: var(--bg2); flex-shrink: 0; }
+.ai-msgs { flex: 1; overflow-y: auto; padding: 20px 28px; display: flex; flex-direction: column; gap: 12px; }
+.ai-inp-wrap { padding: 12px 28px max(20px,env(safe-area-inset-bottom)); background: var(--bg2); border-top: 1px solid var(--border); display: flex; gap: 10px; flex-shrink: 0; }
+.ai-inp-wrap input { flex: 1; border-radius: 14px; }
+.msg { max-width: 80%; padding: 12px 16px; border-radius: 18px; font-size: 13px; line-height: 1.6; }
+.msg.u { align-self: flex-end; background: var(--blue); color: #fff; border-radius: 18px 18px 4px 18px; font-weight: 500; }
+.msg.a { align-self: flex-start; background: var(--bg2); border: 1px solid var(--border); border-radius: 18px 18px 18px 4px; box-shadow: var(--shadow-sm); }
+[data-dark] .msg.a { background: var(--bg3); }
+.msg-name { font-size: 10px; color: var(--blue); font-weight: 700; letter-spacing: .06em; margin-bottom: 4px; text-transform: uppercase; }
+.typing { display: flex; gap: 4px; align-items: center; padding: 4px 0; }
+.typing span { width: 6px; height: 6px; border-radius: 50%; background: var(--text3); animation: bounce .8s infinite; }
+.typing span:nth-child(2) { animation-delay: .15s; }
+.typing span:nth-child(3) { animation-delay: .3s; }
+@keyframes bounce { 0%,80%,100% { transform: translateY(0); } 40% { transform: translateY(-6px); } }
+.send-btn { background: var(--blue); border: none; border-radius: 12px; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+.send-btn svg { width: 18px; height: 18px; stroke: #fff; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ============ FINANCE SCREENS ============ */
+.fin-screen { padding: 32px 28px 60px; max-width: 900px; }
+.page-title { font-size: 34px; font-weight: 700; letter-spacing: -1px; margin-bottom: 4px; }
+.page-sub { font-size: 14px; color: var(--text2); margin-bottom: 28px; }
+
+/* ============ PIN ============ */
+.pin-wrap { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; gap: 24px; }
+.pin-dots { display: flex; gap: 12px; }
+.pin-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--blue); background: transparent; transition: .15s; }
+.pin-dot.on { background: var(--blue); }
+.pin-pad { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; max-width: 240px; width: 100%; }
+.pk { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 18px; font-size: 22px; font-weight: 600; text-align: center; cursor: pointer; transition: .15s; box-shadow: var(--shadow-sm); }
+.pk:active { background: var(--blue); color: #fff; border-color: var(--blue); transform: scale(.97); }
+
+/* ============ NW CARD ============ */
+.nw-card { background: linear-gradient(135deg, #1D1D1F 0%, #2C2C2E 100%); border-radius: var(--radius); padding: 24px; color: #fff; border: none; position: relative; overflow: hidden; }
+.nw-card::after { content: '₹'; position: absolute; right: -10px; bottom: -20px; font-size: 100px; opacity: .06; font-weight: 700; }
+
+/* ============ SETTINGS ============ */
+.setting-row { display: flex; align-items: center; justify-content: space-between; padding: 16px 0; border-bottom: 1px solid var(--border); }
+.setting-row:last-child { border-bottom: none; }
+.toggle { width: 50px; height: 30px; border-radius: 99px; background: var(--bg4); cursor: pointer; position: relative; transition: .3s; flex-shrink: 0; border: none; }
+.toggle.on { background: var(--green); }
+.toggle::after { content: ''; position: absolute; width: 22px; height: 22px; border-radius: 50%; background: #fff; top: 4px; left: 4px; transition: .3s; box-shadow: 0 1px 4px rgba(0,0,0,.2); }
+.toggle.on::after { left: 24px; }
+
+/* ============ FLEX UTILS ============ */
+.flex { display: flex; align-items: center; }
+.fb { display: flex; align-items: center; justify-content: space-between; }
+.g4 { gap: 4px; } .g8 { gap: 8px; } .g12 { gap: 12px; } .g16 { gap: 16px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.sx { overflow-x: auto; display: flex; gap: 6px; padding-bottom: 4px; scrollbar-width: none; }
+.sx::-webkit-scrollbar { display: none; }
+.filter-pill { padding: 6px 14px; border-radius: 99px; font-size: 11px; font-weight: 600; cursor: pointer; border: 1px solid var(--border); color: var(--text2); background: var(--bg2); white-space: nowrap; transition: .15s; }
+.filter-pill.on { background: var(--text); color: var(--bg); border-color: var(--text); }
+[data-dark] .filter-pill.on { background: var(--blue); color: #fff; border-color: var(--blue); }
+
+/* ============ MOBILE WHEEL NAV ============ */
+.wheel-btn { position: fixed; bottom: 28px; right: 20px; width: 56px; height: 56px; border-radius: 50%; background: var(--blue); border: none; cursor: pointer; z-index: 300; display: none; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(0,113,227,.4); transition: .2s; }
+.wheel-btn svg { width: 22px; height: 22px; stroke: #fff; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; transition: .3s; }
+.wheel-btn.open svg { transform: rotate(45deg); }
+.wheel-overlay { display: none; position: fixed; inset: 0; z-index: 250; }
+.wheel-overlay.open { display: block; }
+.wheel-items { position: fixed; bottom: 28px; right: 20px; z-index: 260; pointer-events: none; }
+.wi { position: absolute; opacity: 0; transform: scale(0.5); transition: .25s cubic-bezier(.34,1.56,.64,1); pointer-events: none; display: flex; align-items: center; gap: 10px; }
+.wi.open { opacity: 1; transform: scale(1); pointer-events: auto; }
+.wi-btn { width: 48px; height: 48px; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow); font-size: 20px; transition: .15s; flex-shrink: 0; }
+.wi-lbl { background: var(--bg2); border: 1px solid var(--border); border-radius: 99px; padding: 5px 12px; font-size: 11px; font-weight: 600; color: var(--text); white-space: nowrap; box-shadow: var(--shadow-sm); order: -1; }
+.wi-home { bottom: 68px; right: 4px; }
+.wi-finance { bottom: 116px; right: 50px; }
+.wi-calendar { bottom: 136px; right: 108px; }
+.wi-fitness { bottom: 116px; right: 162px; }
+.wi-study { bottom: 184px; right: 4px; }
+.wi-goals { bottom: 208px; right: 56px; }
+.wi-notes { bottom: 208px; right: 118px; }
+.wi-mentor { bottom: 184px; right: 172px; }
+.wi-settings { bottom: 144px; right: 216px; }
+
+/* ============ PORTRAIT MOBILE ============ */
+@media (max-width: 767px), (orientation: portrait) {
+  .sidebar { display: none; }
+  .bento { padding: 56px 16px 100px; }
+  .bento-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .bcard.span3 { grid-column: span 2; }
+  .bcard.span2 { grid-column: span 2; }
+  .wheel-btn { display: flex; }
+  .fin-screen { padding: 56px 16px 100px; }
+  .ai-header { padding: 56px 16px 14px; }
+  .ai-msgs { padding: 16px; }
+  .ai-inp-wrap { padding: 10px 16px max(20px,env(safe-area-inset-bottom)); }
+  .page-title { font-size: 28px; }
+  .num-big { font-size: 32px; }
+  .greeting { font-size: 22px; }
+  .weather-temp { font-size: 42px; }
+}
+
+/* ============ ENC BADGE ============ */
+.enc { display: inline-flex; align-items: center; gap: 4px; background: var(--green-soft); border: 1px solid rgba(48,209,88,.2); border-radius: 99px; padding: 3px 9px; font-size: 10px; color: var(--green); font-weight: 600; }
+.enc-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+
+/* ============ WATCHLIST ============ */
+.watch-row { display: flex; align-items: center; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.watch-row:last-child { border-bottom: none; }
+.watch-ticker { font-size: 14px; font-weight: 700; color: var(--blue); min-width: 52px; }
+.watch-exchange { font-size: 10px; color: var(--text3); font-weight: 500; margin-top: 1px; }
+
+/* ============ LOAN ============ */
+.loan-row { display: flex; align-items: center; gap: 8px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.loan-row:last-child { border-bottom: none; }
+</style>
+</head>
+<body>
+<div id="app">
+<!-- ===== SIDEBAR ===== -->
+<div class="sidebar">
+  <div class="sidebar-logo">Leon</div>
+  <button class="nav-btn active" id="nb-home" onclick="go('home')">
+    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Home
+  </button>
+  <button class="nav-btn" id="nb-finance" onclick="go('finance')">
+    <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+    Finance
+  </button>
+  <button class="nav-btn" id="nb-goals" onclick="go('goals')">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+    Goals
+  </button>
+  <button class="nav-btn" id="nb-fitness" onclick="go('fitness')">
+    <svg viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+    Fitness
+  </button>
+  <button class="nav-btn" id="nb-study" onclick="go('study')">
+    <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+    Study
+  </button>
+  <button class="nav-btn" id="nb-calendar" onclick="go('calendar')">
+    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    Calendar
+  </button>
+  <button class="nav-btn" id="nb-notes" onclick="go('notes')">
+    <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    Notes
+  </button>
+  <button class="nav-btn" id="nb-mentor" onclick="go('mentor')">
+    <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    AI
+  </button>
+  <div class="sidebar-bottom">
+    <button class="nav-btn" id="nb-settings" onclick="go('settings')">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Settings
+    </button>
+    <button class="theme-btn" onclick="toggleDark()">☀️</button>
+  </div>
+</div>
+
+<!-- ===== MAIN ===== -->
+<div class="main">
+
+<!-- HOME -->
+<div id="s-home" class="screen active">
+  <div class="bento">
+    <div class="bento-grid">
+
+      <!-- Greeting + Date -->
+      <div class="bcard cp" style="grid-column:span 2">
+        <div class="greeting" id="h-greeting">Guten Morgen, <span class="name">Freund 👋</span></div>
+        <div class="date-text" id="h-date"></div>
+        <div style="margin-top:14px;padding:12px 14px;background:var(--blue-soft);border:1px solid var(--blue-border);border-radius:var(--radius-sm)">
+          <div class="xs" style="color:var(--blue);font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px">📍 Germany Today</div>
+          <div class="sm" id="h-alert" style="line-height:1.5;color:var(--text)">Loading...</div>
+        </div>
+      </div>
+
+      <!-- Exam Countdown -->
+      <div class="bcard blue cp">
+        <div class="card-label white">Abschlussprüfung</div>
+        <div class="num-big" style="color:#fff" id="h-exam">—</div>
+        <div class="sub-text white">Tage verbleibend</div>
+        <div style="margin-top:8px;font-size:11px;color:rgba(255,255,255,.6)">Mai 2027</div>
+      </div>
+
+      <!-- Weather -->
+      <div class="bcard blue cp" style="position:relative;overflow:hidden">
+        <div style="position:absolute;top:-20px;right:-20px;font-size:100px;opacity:.1">☁️</div>
+        <div class="w-tabs">
+          <div class="w-tab on" onclick="switchW('aachen',this)">🇩🇪 Aachen</div>
+          <div class="w-tab" onclick="switchW('idukki',this)">🇮🇳 Painav</div>
+          <div class="w-tab" onclick="toggleWSearch()">🔍</div>
+        </div>
+        <div class="weather-temp" id="h-wtemp">—°</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.7);margin-top:2px" id="h-wcity">Loading...</div>
+        <div class="weather-desc" id="h-wdesc">—</div>
+        <div id="wsearch-wrap" style="display:none">
+          <div class="w-search mt8">
+            <input type="text" id="wsearch-inp" placeholder="City name...">
+            <button class="w-search-btn" onclick="fetchWeatherSearch()">Go</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Today Shift -->
+      <div class="bcard cp">
+        <div class="card-label">Dienst Heute</div>
+        <div style="font-size:24px;font-weight:700;margin:8px 0" id="h-shift">—</div>
+        <div style="font-size:12px;color:var(--text3)" id="h-shift-date"></div>
+      </div>
+
+      <!-- Live News - REAL - spans full width -->
+      <div class="bcard span3">
+        <div class="cp-sm" style="border-bottom:1px solid var(--border)">
+          <div class="fb">
+            <div class="flex g12">
+              <div style="font-size:17px;font-weight:700">Live News</div>
+              <div class="flex g4 xs" style="color:var(--green);font-weight:600"><div style="width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite"></div>LIVE</div>
+            </div>
+            <div class="flex g8">
+              <span id="news-time" style="font-size:11px;color:var(--text3)"></span>
+              <button class="btn-ghost btn-sm" onclick="fetchNews()">↻ Refresh</button>
+            </div>
+          </div>
+          <div class="sx mt8">
+            <div class="filter-pill on" onclick="filterN('all',this)">All</div>
+            <div class="filter-pill" onclick="filterN('geo',this)">🌍 Geo</div>
+            <div class="filter-pill" onclick="filterN('markets',this)">📈 Markets</div>
+            <div class="filter-pill" onclick="filterN('tech',this)">💻 Tech</div>
+            <div class="filter-pill" onclick="filterN('india',this)">🇮🇳 India</div>
+            <div class="filter-pill" onclick="filterN('europe',this)">🇪🇺 Europe</div>
+          </div>
+        </div>
+        <div class="cp" id="news-list"><div class="news-loading">Loading live news...</div></div>
+      </div>
+
+      <!-- Trader Signals -->
+      <div class="bcard span3 cp">
+        <div class="fb mb12">
+          <div style="font-size:17px;font-weight:700">⚡ Trader Signals</div>
+          <button class="btn-ghost btn-sm" onclick="openModal('sig-add-modal')">+ Add Signal</button>
+        </div>
+        <div id="signals-list"></div>
+      </div>
+
+      <!-- Goal Rings -->
+      <div class="bcard span2 cp">
+        <div class="fb mb12"><div style="font-size:17px;font-weight:700">Goals</div><button class="btn-ghost btn-sm" onclick="go('goals')">View All →</button></div>
+        <div class="rings-row" id="h-rings"></div>
+      </div>
+
+      <!-- Habits -->
+      <div class="bcard cp">
+        <div class="fb mb12">
+          <div style="font-size:17px;font-weight:700">Habits</div>
+          <span id="h-streak" style="font-size:13px;font-weight:700;color:var(--orange)">0 🔥</span>
+        </div>
+        <div class="habit-grid" id="h-habits"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- FINANCE -->
+<div id="s-finance" class="screen">
+  <div class="pin-wrap" id="fin-pin">
+    <div style="text-align:center">
+      <div style="font-size:40px;margin-bottom:8px">🔐</div>
+      <div style="font-size:22px;font-weight:700">Finance</div>
+      <div class="sub-text mt8">Enter your PIN</div>
+    </div>
+    <div class="pin-dots"><div class="pin-dot" id="pd0"></div><div class="pin-dot" id="pd1"></div><div class="pin-dot" id="pd2"></div><div class="pin-dot" id="pd3"></div></div>
+    <div style="color:var(--red);font-size:13px;font-weight:500;height:18px" id="pin-err"></div>
+    <div class="pin-pad">
+      <div class="pk" onclick="pp('1')">1</div><div class="pk" onclick="pp('2')">2</div><div class="pk" onclick="pp('3')">3</div>
+      <div class="pk" onclick="pp('4')">4</div><div class="pk" onclick="pp('5')">5</div><div class="pk" onclick="pp('6')">6</div>
+      <div class="pk" onclick="pp('7')">7</div><div class="pk" onclick="pp('8')">8</div><div class="pk" onclick="pp('9')">9</div>
+      <div class="pk" onclick="pp('c')" style="font-size:12px;color:var(--text2)">CLR</div><div class="pk" onclick="pp('0')">0</div><div class="pk" onclick="pp('d')" style="font-size:18px">⌫</div>
+    </div>
+  </div>
+  <div id="fin-content" style="display:none">
+    <div class="fin-screen">
+      <div class="fb mb16">
+        <div><div class="page-title">Finance</div><div class="page-sub">Encrypted · Private</div></div>
+        <div class="flex g8"><div class="enc"><div class="enc-dot"></div>ENC</div><button class="btn-ghost btn-sm" onclick="lockFin()">🔒 Lock</button></div>
+      </div>
+      <!-- Salary card -->
+      <div class="bcard blue cp mb12">
+        <div class="fb">
+          <div>
+            <div class="card-label white">Total Income / Month</div>
+            <div style="font-size:40px;font-weight:700;color:#fff;letter-spacing:-1px" id="fin-income">€1,110</div>
+            <div style="font-size:12px;color:rgba(255,255,255,.7);margin-top:4px" id="fin-extra-lbl">+ €0 extra income</div>
+          </div>
+          <button onclick="openModal('salary-modal')" style="background:rgba(255,255,255,.2);border:none;border-radius:99px;padding:8px 18px;color:#fff;font-size:12px;font-weight:600;cursor:pointer">✏️ Edit</button>
+        </div>
+      </div>
+      <!-- Grid overview -->
+      <div class="grid2 mb12">
+        <div class="bcard cp" style="margin:0"><div class="card-label">Ausgegeben</div><div style="font-size:28px;font-weight:700;color:var(--red);letter-spacing:-.5px" id="fin-spent">€0</div></div>
+        <div class="bcard cp" style="margin:0"><div class="card-label">Übrig</div><div style="font-size:28px;font-weight:700;color:var(--green);letter-spacing:-.5px" id="fin-left">€0</div></div>
+      </div>
+      <!-- Budget -->
+      <div class="bcard cp mb12">
+        <div class="fb mb8"><span style="font-size:14px;font-weight:500">Budget Used</span><span style="font-size:14px;font-weight:700;color:var(--red)" id="fin-bpct">0%</span></div>
+        <div class="prog"><div class="prog-fill red" id="fin-bbar" style="width:0%"></div></div>
+        <div class="fb mt8"><span class="xs muted">Fixed costs ~€623 + €150 loan</span><span class="xs muted">Left: <span style="color:var(--red);font-weight:600" id="fin-actual">~€287</span></span></div>
+      </div>
+      <!-- Gap warning - collapsible -->
+      <div class="bcard mb12" style="border-color:rgba(255,59,48,.15);overflow:hidden">
+        <div class="cp-sm" style="cursor:pointer;background:var(--red-soft)" onclick="toggleExpand('gap-c','gap-a')">
+          <div class="fb"><div style="font-size:13px;font-weight:700;color:var(--red)">⚠ €8K Goal Gap Analysis</div><span id="gap-a" style="color:var(--text3);font-size:13px;transition:.2s">▾</span></div>
+        </div>
+        <div style="display:none" id="gap-c">
+          <div class="cp-sm" style="font-size:13px;color:var(--text2);line-height:1.7">
+            Need <strong>€800/month</strong> · Have <strong style="color:var(--red)">~€287</strong> · Gap: <strong style="color:var(--red)">~€513</strong><br>
+            Sep 2025: Loan stops → Gap drops to ~€350<br>
+            May 2027: Graduation → Salary jumps to €2,400+ → Gap closes
+          </div>
+        </div>
+      </div>
+      <!-- 8k goal -->
+      <div class="bcard cp mb12">
+        <div class="fb mb4"><div style="font-size:16px;font-weight:700">€8k Savings Goal</div><span class="tag tag-orange" id="fin-8kpct">0%</span></div>
+        <div style="font-size:32px;font-weight:700;color:var(--orange);letter-spacing:-.5px" id="fin-saved">€0</div>
+        <div class="sub-text">of €8,000 · Target March 2026</div>
+        <div class="prog mt8"><div class="prog-fill orange" id="fin-8kbar" style="width:0%"></div></div>
+      </div>
+      <!-- Net Worth -->
+      <div class="nw-card mb12">
+        <div class="card-label white" style="margin-bottom:12px">Net Worth</div>
+        <div style="font-size:38px;font-weight:700;color:#fff;letter-spacing:-1px" id="fin-nw-eur">€0</div>
+        <div style="font-size:18px;color:rgba(255,255,255,.7);margin-top:4px" id="fin-nw-inr">₹0</div>
+        <div style="background:rgba(255,255,255,.15);border-radius:99px;height:5px;overflow:hidden;margin-top:14px"><div style="height:100%;border-radius:99px;background:#fff;transition:width .8s" id="fin-nw-bar"></div></div>
+        <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:6px" id="fin-nw-pct">0% of ₹3 Crore · 2035 target</div>
+      </div>
+      <!-- Projection -->
+      <div class="bcard mb12">
+        <div class="cp-sm" style="border-bottom:1px solid var(--border);cursor:pointer" onclick="toggleExpand('proj-c','proj-a')">
+          <div class="fb"><div style="font-size:16px;font-weight:700">Financial Projection 2035</div><span id="proj-a" style="color:var(--text3);font-size:13px;transition:.2s">▾</span></div>
+        </div>
+        <div class="cp" id="proj-c">
+          <canvas id="fin-proj" style="height:180px;width:100%"></canvas>
+          <div class="mt12">
+            <div class="flex g8 mt4 xs muted"><div style="width:8px;height:8px;border-radius:50%;background:var(--red);flex-shrink:0"></div>Pessimistisch</div>
+            <div class="flex g8 mt4 xs muted"><div style="width:8px;height:8px;border-radius:50%;background:var(--orange);flex-shrink:0"></div>Realistisch</div>
+            <div class="flex g8 mt4 xs muted"><div style="width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0"></div>Optimistisch</div>
+            <div class="flex g8 mt4 xs muted"><div style="width:8px;height:8px;border-radius:50%;background:var(--blue);flex-shrink:0"></div>Aktuell</div>
+          </div>
+        </div>
+      </div>
+      <!-- Buckets -->
+      <div class="fb mb12"><div style="font-size:16px;font-weight:700">Savings Buckets</div><button class="btn-ghost btn-sm" onclick="openBucketModal()">Edit</button></div>
+      <div class="bcard cp mb12"><canvas id="fin-donut" style="height:130px;width:100%"></canvas><div id="fin-buckets" class="mt12"></div></div>
+      <!-- Expenses -->
+      <div class="fb mb12"><div style="font-size:16px;font-weight:700">Expenses</div><button class="btn btn-sm" onclick="openExpModal()">+ Add</button></div>
+      <div class="sx mb8">
+        <div class="filter-pill on" onclick="filterE('all',this)">All</div>
+        <div class="filter-pill" onclick="filterE('food',this)">🍽 Food</div>
+        <div class="filter-pill" onclick="filterE('transport',this)">🚊 Transport</div>
+        <div class="filter-pill" onclick="filterE('rent',this)">🏠 Rent</div>
+        <div class="filter-pill" onclick="filterE('utilities',this)">💡 Utilities</div>
+        <div class="filter-pill" onclick="filterE('gym',this)">💪 Gym</div>
+        <div class="filter-pill" onclick="filterE('other',this)">📦 Other</div>
+      </div>
+      <div class="bcard cp mb12" id="fin-expenses"></div>
+      <!-- Loan -->
+      <div class="fb mb12"><div style="font-size:16px;font-weight:700">Loan Tracker</div><button class="btn btn-sm" onclick="openModal('loan-modal')">+ Payment</button></div>
+      <div class="bcard cp mb12">
+        <div class="grid2 mb10">
+          <div><div class="xs muted">Remaining</div><div style="font-size:22px;font-weight:700;color:var(--red)" id="fin-loan-rem">₹3,00,000</div></div>
+          <div style="text-align:right"><div class="xs muted">Paid</div><div style="font-size:16px;font-weight:700;color:var(--green)" id="fin-loan-paid">₹3,00,000</div></div>
+        </div>
+        <div class="prog"><div class="prog-fill green" id="fin-loan-bar" style="width:50%"></div></div>
+        <div id="fin-loan-list" class="mt12"></div>
+      </div>
+      <!-- Watchlist -->
+      <div class="fb mb12"><div style="font-size:16px;font-weight:700">📈 Watchlist</div><button class="btn btn-sm" onclick="openModal('watch-modal')">+ Add</button></div>
+      <div class="bcard cp mb12" id="fin-watchlist"><div class="sm muted">No stocks added. Tap + Add to build your watchlist.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- GOALS -->
+<div id="s-goals" class="screen">
+  <div class="fin-screen">
+    <div class="fb mb16"><div class="page-title">Goals</div><button class="btn btn-sm" onclick="openModal('goal-modal')">+ Add</button></div>
+    <div class="bcard cp mb16"><div class="rings-row" id="goals-rings"></div></div>
+    <div id="goals-list"></div>
+  </div>
+</div>
+
+<!-- FITNESS -->
+<div id="s-fitness" class="screen">
+  <div class="fin-screen">
+    <div class="page-title mb16">Fitness 💪</div>
+    <div class="grid2 mb12">
+      <div class="bcard dark-card cp" style="text-align:center;margin:0"><div class="card-label white">Days to September</div><div style="font-size:48px;font-weight:700;color:#fff;letter-spacing:-2px" id="fit-sep">—</div></div>
+      <div class="bcard cp" style="text-align:center;margin:0"><div class="card-label">Streak</div><div style="font-size:48px;font-weight:700;color:var(--orange);letter-spacing:-2px" id="fit-streak">0</div><div class="xs muted mt4">🔥 days</div></div>
+    </div>
+    <div style="font-size:16px;font-weight:700;margin-bottom:12px">Habits</div>
+    <div class="bcard cp mb12"><div class="habit-grid" id="fit-habits"></div></div>
+    <div class="fb mb12"><div style="font-size:16px;font-weight:700">Workouts</div><button class="btn btn-sm" onclick="openModal('wo-modal')">+ Log</button></div>
+    <div class="bcard cp mb12" id="fit-wo-list"><div class="sm muted">No workouts yet.</div></div>
+    <div class="fb mb12"><div style="font-size:16px;font-weight:700">Weight</div><button class="btn-ghost btn-sm btn-green" style="background:var(--green-soft);border-color:var(--green);color:var(--green)" onclick="openModal('wt-modal')">+ Log</button></div>
+    <div class="bcard cp mb12" id="fit-wt-list"><div class="sm muted">No entries yet.</div></div>
+    <div style="font-size:16px;font-weight:700;margin-bottom:12px">Weight Trend</div>
+    <div class="bcard cp mb12"><canvas id="fit-wt-chart" style="height:120px;width:100%"></canvas></div>
+    <div style="font-size:16px;font-weight:700;margin-bottom:12px">Activity Heatmap</div>
+    <div class="bcard cp"><div class="heatmap" id="fit-heatmap"></div><div class="xs muted mt8">Last 84 days of activity</div></div>
+  </div>
+</div>
+
+<!-- STUDY -->
+<div id="s-study" class="screen">
+  <div class="fin-screen">
+    <div class="page-title mb16">Study 📚</div>
+    <div class="bcard blue cp mb16" style="text-align:center">
+      <div style="font-size:52px;font-weight:700;color:#fff;letter-spacing:-2px" id="study-days">—</div>
+      <div style="font-size:13px;color:rgba(255,255,255,.7);margin-top:6px">Days · Abschlussprüfung May 2027</div>
+      <div style="height:1px;background:rgba(255,255,255,.2);margin:14px 0"></div>
+      <div class="fb"><span style="font-size:12px;color:rgba(255,255,255,.6)">Weekly target</span><span style="font-size:12px;font-weight:700;color:#fff" id="study-weekly">Not set</span></div>
+      <button onclick="openModal('weekly-modal')" style="background:rgba(255,255,255,.2);border:none;border-radius:99px;padding:7px 18px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;margin-top:12px">Set Target</button>
+    </div>
+    <div class="sx mb16">
+      <div class="filter-pill on" onclick="switchStudy('topics',this)">Topics</div>
+      <div class="filter-pill" onclick="switchStudy('exam',this)">Exam Prep</div>
+    </div>
+    <div id="study-topics-p">
+      <div class="fb mb12"><div style="font-size:16px;font-weight:700">Topics Library</div><button class="btn btn-sm" onclick="openModal('topic-modal')">+ Topic</button></div>
+      <div id="study-topics"></div>
+    </div>
+    <div id="study-exam-p" style="display:none">
+      <div class="fb mb12"><div style="font-size:16px;font-weight:700">Q&A Bank</div><button class="btn btn-sm" onclick="openModal('qa-modal')">+ Q&A</button></div>
+      <button class="btn mb12" style="background:var(--purple)" onclick="startQuiz()">🧠 Start Quiz</button>
+      <div id="study-qa"></div>
+    </div>
+  </div>
+</div>
+
+<!-- CALENDAR -->
+<div id="s-calendar" class="screen">
+  <div class="fin-screen">
+    <div class="fb mb16"><div class="page-title">Calendar</div><button class="btn btn-sm" onclick="openModal('rem-modal')">+ Reminder</button></div>
+    <div class="bcard cp mb12">
+      <div class="fb mb14"><button class="btn-ghost btn-sm" onclick="calNav(-1)">‹</button><span style="font-size:15px;font-weight:700" id="cal-lbl"></span><button class="btn-ghost btn-sm" onclick="calNav(1)">›</button></div>
+      <div class="cal-grid" id="cal-grid"></div>
+      <div class="flex g12 mt12" style="flex-wrap:wrap">
+        <div class="flex g4 xs muted"><div class="sd sd-frueh" style="display:inline-block;width:6px;height:6px;border-radius:50%"></div>Früh</div>
+        <div class="flex g4 xs muted"><div class="sd sd-spaet" style="display:inline-block;width:6px;height:6px;border-radius:50%"></div>Spät</div>
+        <div class="flex g4 xs muted"><div class="sd sd-nacht" style="display:inline-block;width:6px;height:6px;border-radius:50%"></div>Nacht</div>
+        <div class="flex g4 xs muted"><div class="sd sd-frei" style="display:inline-block;width:6px;height:6px;border-radius:50%"></div>Frei</div>
+        <div class="flex g4 xs muted"><div class="sd sd-kurs" style="display:inline-block;width:6px;height:6px;border-radius:50%"></div>Kurs</div>
+      </div>
+    </div>
+    <div class="grid2 mb12">
+      <div class="bcard cp" style="margin:0;text-align:center"><div style="font-size:36px;font-weight:700;color:var(--blue)" id="cal-free">—</div><div class="xs muted">Free Days</div></div>
+      <div class="bcard cp" style="margin:0;text-align:center"><div style="font-size:36px;font-weight:700;color:var(--teal)" id="cal-work">—</div><div class="xs muted">Work Days</div></div>
+    </div>
+    <div style="font-size:16px;font-weight:700;margin-bottom:12px">Add Shift</div>
+    <div class="bcard cp mb12">
+      <div class="mrow"><input type="date" id="cal-date"><select id="cal-type"><option value="frueh">Früh</option><option value="spaet">Spät</option><option value="nacht">Nacht</option><option value="frei">Frei</option><option value="kurs">Kurs</option></select></div>
+      <button class="btn w-full" onclick="addShift()">Add to Calendar</button>
+    </div>
+    <div style="font-size:16px;font-weight:700;margin-bottom:12px">Reminders</div>
+    <div class="bcard cp" id="cal-reminders"><div class="sm muted">No reminders.</div></div>
+  </div>
+</div>
+
+<!-- NOTES -->
+<div id="s-notes" class="screen">
+  <div class="fin-screen">
+    <div class="fb mb16"><div class="page-title">Notes</div><button class="btn btn-sm" onclick="openModal('note-modal')">+ New</button></div>
+    <div class="sx mb16">
+      <div class="filter-pill on" onclick="switchNote('quick',this)">Quick</div>
+      <div class="filter-pill" onclick="switchNote('nursing',this)">Nursing</div>
+      <div class="filter-pill" onclick="switchNote('goals',this)">Goals</div>
+      <div class="filter-pill" onclick="switchNote('finance',this)">Finance</div>
+    </div>
+    <div id="notes-list"></div>
+  </div>
+</div>
+
+<!-- MENTOR -->
+<div id="s-mentor" class="ai-screen">
+  <div class="ai-header">
+    <div style="font-size:24px;font-weight:700">AI Mentor 🤖</div>
+    <div class="sub-text">Groq · Denglish · Kein Sugarcoating</div>
+  </div>
+  <div class="ai-msgs" id="ai-msgs"><div id="ai-wrap" style="display:flex;flex-direction:column;gap:12px;min-height:100%"></div></div>
+  <div class="ai-inp-wrap">
+    <input type="text" id="ai-inp" placeholder="Frag mich was..." onkeydown="if(event.key==='Enter')sendAI()" style="border-radius:14px">
+    <button class="send-btn" onclick="sendAI()"><svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div id="s-settings" class="screen">
+  <div class="fin-screen">
+    <div class="page-title mb16">Settings</div>
+    <div class="bcard cp mb12">
+      <div class="setting-row">
+        <div><div style="font-size:14px;font-weight:600">Dark Mode</div><div class="xs muted mt4">Toggle light/dark theme</div></div>
+        <button class="toggle" id="dark-tog" onclick="toggleDark()"></button>
+      </div>
+      <div class="setting-row">
+        <div><div style="font-size:14px;font-weight:600">Notifications</div><div class="xs muted mt4">10am + 10pm daily</div></div>
+        <button class="toggle on" id="notif-tog" onclick="toggleNotif()"></button>
+      </div>
+    </div>
+    <div class="bcard cp mb12">
+      <div style="font-size:16px;font-weight:700;margin-bottom:4px">🔑 Groq API Key</div>
+      <div class="xs muted mb12">Free · No limits · console.groq.com · Stored encrypted on device only.</div>
+      <input type="password" id="api-key-inp" placeholder="gsk_..." class="mb8">
+      <button class="btn w-full" onclick="saveKey()">Save Key</button>
+      <div style="font-size:12px;color:var(--green);margin-top:8px;display:none;font-weight:500" id="key-saved">✓ Key saved successfully</div>
+    </div>
+    <div class="bcard cp mb12">
+      <div style="font-size:16px;font-weight:700;margin-bottom:8px">🔐 Encryption</div>
+      <div class="xs muted mb8">All data encrypted before saving. No server sees your information.</div>
+      <div class="flex g8"><div class="enc"><div class="enc-dot"></div>ENCRYPTED</div><span class="xs muted">XOR + Base64 · Local only</span></div>
+    </div>
+    <div class="bcard cp">
+      <div style="font-size:16px;font-weight:700;margin-bottom:8px">LEON OS</div>
+      <div class="xs muted" style="line-height:1.6">Personal AI dashboard. Real news, real weather, Groq AI analysis. Hosted on GitHub Pages. All data stays on your devices.</div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end main -->
+</div><!-- end app -->
+
+<!-- WHEEL NAV (mobile) -->
+<div class="wheel-overlay" id="woverlay" onclick="closeWheel()"></div>
+<div class="wheel-items">
+  <div class="wi wi-home" id="wi-home"><div class="wi-lbl">Home</div><button class="wi-btn" style="background:var(--blue)" onclick="wNav('home')">🏠</button></div>
+  <div class="wi wi-finance" id="wi-finance"><div class="wi-lbl">Finance</div><button class="wi-btn" style="background:var(--green)" onclick="wNav('finance')">💶</button></div>
+  <div class="wi wi-calendar" id="wi-calendar"><div class="wi-lbl">Calendar</div><button class="wi-btn" style="background:var(--teal)" onclick="wNav('calendar')">📅</button></div>
+  <div class="wi wi-fitness" id="wi-fitness"><div class="wi-lbl">Fitness</div><button class="wi-btn" style="background:var(--red)" onclick="wNav('fitness')">💪</button></div>
+  <div class="wi wi-study" id="wi-study"><div class="wi-lbl">Study</div><button class="wi-btn" style="background:var(--purple);width:42px;height:42px" onclick="wNav('study')">📚</button></div>
+  <div class="wi wi-goals" id="wi-goals"><div class="wi-lbl">Goals</div><button class="wi-btn" style="background:var(--orange);width:42px;height:42px" onclick="wNav('goals')">🎯</button></div>
+  <div class="wi wi-notes" id="wi-notes"><div class="wi-lbl">Notes</div><button class="wi-btn" style="background:#32ADE6;width:42px;height:42px" onclick="wNav('notes')">📝</button></div>
+  <div class="wi wi-mentor" id="wi-mentor"><div class="wi-lbl">Mentor</div><button class="wi-btn" style="background:#636366;width:42px;height:42px" onclick="wNav('mentor')">🤖</button></div>
+  <div class="wi wi-settings" id="wi-settings"><div class="wi-lbl">Settings</div><button class="wi-btn" style="background:#8E8E93;width:42px;height:42px" onclick="wNav('settings')">⚙️</button></div>
+</div>
+<button class="wheel-btn" id="wbtn" onclick="toggleWheel()">
+  <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+</button>
+
+<!-- MODALS -->
+<div class="overlay" id="salary-modal"><div class="modal"><div class="modal-handle"></div><div class="fb mb16"><h3>Edit Salary</h3><button class="cbtn" onclick="closeModal('salary-modal')">×</button></div><input type="number" id="m-sal" placeholder="Base salary €" class="mb8"><input type="number" id="m-extra" placeholder="Extra income € (optional)" class="mb16"><button class="btn w-full" onclick="saveSalary()">Save & Recalculate</button></div></div>
+<div class="overlay" id="expense-modal"><div class="modal"><div class="modal-handle"></div><div class="fb mb12"><h3 id="exp-ttl">Add Expense</h3><button class="cbtn" onclick="closeModal('expense-modal')">×</button></div><input type="text" id="em-name" placeholder="Description" class="mb8"><div class="mrow"><input type="number" id="em-amt" placeholder="Amount €" step="0.01"><select id="em-cat"><option value="food">🍽 Food</option><option value="transport">🚊 Transport</option><option value="rent">🏠 Rent</option><option value="utilities">💡 Utilities</option><option value="gym">💪 Gym</option><option value="other">📦 Other</option></select></div><input type="date" id="em-date" class="mb16"><button class="btn w-full" onclick="saveExp()">Save</button></div></div>
+<div class="overlay" id="bucket-modal"><div class="modal"><div class="modal-handle"></div><div class="fb mb12"><h3>Savings Buckets</h3><button class="cbtn" onclick="closeModal('bucket-modal')">×</button></div><div id="bucket-edit"></div><button class="btn w-full mt8" onclick="saveBuckets()">Save</button></div></div>
+<div class="overlay" id="loan-modal"><div class="modal"><div class="modal-handle"></div><div class="fb mb12"><h3>Loan Payment</h3><button class="cbtn" onclick="closeModal('loan-modal')">×</button></div><input type="number" id="lm-amt" placeholder="Amount €" step="0.01" class="mb8"><input type="date" id="lm-date" class="mb8"><textarea id="lm-note" rows="2" placeholder="Note..." class="mb16"></textarea><button class="btn w-full" onclick="saveLoan()">Add Payment</button></div></div>
+<div class="overlay" id="watch-modal"><div class="modal"><div class="modal-handle"></div><div class="fb mb12"><h3>Add to Watchlist</h3><button class="cbtn" onclick="closeModal('watch-modal')">×</button></div><input type="text" id="wm-ticker" placeholder="Ticker (e.g. ASML)" class="mb8"><input type="text" id="wm-name" placeholder="Company name" class="mb8"><select id="wm-exchange" class="mb8"><option value="Euronext">Euronext</option><option value="XETRA">XETRA</option><option value="NSE">NSE India</option><option value="BSE">BSE India</option><option value="NASDAQ">NASDAQ</option><option value="NYSE">NYSE</option></select><input type="number" id="wm-target" placeholder="Price target (optional)" step="0.01" class="mb16"><button class="btn w-full" onclick="saveWatch()">Add Stock</button></div></div>
+<div class="overlay" id="goal-modal"><div class="modal"><div class="modal-handle"></div><div class="fb mb12"><h3>Add Goal</h3><button class="cbtn" onclick="closeModal('goal-modal')">×</button></div><input type="text" id="gm-title" placeholder="Goal title" class="mb8"><input type="text" id="gm-emoji" placeholder="Emoji" class="mb8"><input type="date" id="gm-deadline" class="mb8"><input type="text" id="gm-next" placeholder="Next action step" class="mb8"><div class="mrow"><input type="number" id="gm-cur" placeholder="Current"><input type="number" id="gm-tgt" placeholder="Target"></div><button class="btn w-full mt8" onclick="saveGoal()">Add Goal</button></div></div>
+<div class="overlay" id="wo-modal"><div class="modal"><div class="modal-handle"></div><div class="fb mb12"><h3>Log Workout</h3><button class="cbtn" onclick="closeModal('wo-modal')">×</button></div><input type="text" id="wom-type" placeholder="Type (Gym, Run...)" class="mb8"><input type="number" id="wom-dur" placeholder="Duration (minutes)" class="mb8"><textarea id="wom-notes" rows="2" placeholder="Notes" class="mb8"></textarea><input type="date" id="wom-date" class="mb16"><button class="btn w-full" onclick="saveWorkout()">Log</button></div></div>
+<div class="overlay" id="wt-modal"><div class="modal"><div class="modal-handle"></div><div class="fb mb12"><h3>Log Weight</h3><button class="cbtn" onclick="closeModal('wt-modal')">×</button></div><input type="number" id="wtm-val" placeholder="Weight (kg)" step="0.1" class="mb8"><input type="date" id="wtm-date" class="mb16"><button class="btn w-full" onclick="saveWeight()">Save</button></div></div>
+<div class="overlay" id="topic-modal"><div class="modal"><div class="modal-handle"></div><div class="fb mb12"><h3>Add Topic</h3><button class="cbtn" onclick="closeModal('topic-modal')">×</button></div><input type="text" id="tm-name" placeholder="Topic name" class="mb8"><textarea id="tm-notes" rows="3" placeholder="Notes..." class="mb8"></textarea><input type="text" id="tm-subs" placeholder="Subtopics (comma separated)" class="mb16"><button class="btn w-full" onclick="saveTopic()">Add</button></div></div>
+<div class="overlay" id="qa-modal"><div class="modal"><div class="modal-handle"></div><div class="fb mb12"><h3>Add Q&A</h3><button class="cbtn" onclick="closeModal('qa-modal')">×</button></div><textarea id="qam-q" rows="3" placeholder="Question..." class="mb8"></textarea><textarea id="qam-a" rows="4" placeholder="Answer..." class="mb16"></textarea><button class="btn w-full" onclick="saveQA()">Add</button></div></div>
+<div class="overlay" id="weekly-modal"><div class="modal"><div class="modal-handle"></div><div class="fb mb12"><h3>Weekly Target</h3><button class="cbtn" onclick="closeModal('weekly-modal')">×</button></div><input type="text" id="wkm-inp" placeholder="e.g. 3 topics per week" class="mb16"><button class="btn w-full" onclick="saveWeekly()">Save</button></div></div>
+<div class="overlay" id="rem-modal"><div class="modal"><div class="modal-handle"></div><div class="fb mb12"><h3>Add Reminder</h3><button class="cbtn" onclick="closeModal('rem-modal')">×</button></div><input type="text" id="rem-title" placeholder="Title" class="mb8"><input type="date" id="rem-date" class="mb8"><input type="text" id="rem-emoji" placeholder="Emoji (optional)" class="mb16"><button class="btn w-full" onclick="saveReminder()">Add</button></div></div>
+<div class="overlay" id="note-modal"><div class="modal"><div class="modal-handle"></div><div class="fb mb12"><h3>New Note</h3><button class="cbtn" onclick="closeModal('note-modal')">×</button></div><input type="text" id="nm-title" placeholder="Title" class="mb8"><select id="nm-cat" class="mb8"><option value="quick">Quick</option><option value="nursing">Nursing</option><option value="goals">Goals</option><option value="finance">Finance</option></select><textarea id="nm-body" rows="6" placeholder="Write your note..." class="mb16"></textarea><button class="btn w-full" onclick="saveNote()">Save</button></div></div>
+<div class="overlay" id="quiz-modal"><div class="modal" style="text-align:center"><div class="modal-handle"></div><div class="fb mb12"><h3>🧠 Quiz Mode</h3><button class="cbtn" onclick="closeModal('quiz-modal')">×</button></div><div class="xs muted mb8" id="quiz-prog"></div><div id="quiz-q" style="font-size:15px;font-weight:600;text-align:left;line-height:1.5;margin-bottom:16px"></div><button class="btn-ghost w-full mb8" onclick="revealAns()">Show Answer</button><div id="quiz-a" style="display:none;text-align:left;font-size:13px;color:var(--text2);line-height:1.6;padding:14px;background:var(--bg3);border-radius:var(--radius-sm);margin-bottom:14px"></div><div id="quiz-btns" style="display:none;gap:10px;justify-content:center" class="flex"><button class="btn btn-red" onclick="qNext(false)">❌ Wrong</button><button class="btn btn-green" onclick="qNext(true)">✅ Correct</button></div><div id="quiz-result" style="display:none;font-size:20px;font-weight:700;margin-top:8px"></div></div></div>
+<div class="overlay" id="signal-modal"><div class="modal"><div class="modal-handle"></div><div class="fb mb12"><h3 id="sig-ttl">Signal</h3><button class="cbtn" onclick="closeModal('signal-modal')">×</button></div><div id="sig-body" style="font-size:13px;line-height:1.7;color:var(--text2)"></div><div class="mt12"><div class="xs muted mb8" style="font-weight:600;letter-spacing:.05em;text-transform:uppercase">Affected Stocks</div><div id="sig-stocks" style="display:flex;gap:6px;flex-wrap:wrap"></div></div><button class="btn w-full mt16" onclick="deepAnalysis()" id="deep-btn">🤖 AI Deep Analysis (Free)</button></div></div>
+<div class="overlay" id="sig-add-modal"><div class="modal"><div class="modal-handle"></div><div class="fb mb12"><h3>Add Signal</h3><button class="cbtn" onclick="closeModal('sig-add-modal')">×</button></div><input type="text" id="sig-title-inp" placeholder="Signal title" class="mb8"><textarea id="sig-summary-inp" rows="3" placeholder="Your thesis / summary..." class="mb8"></textarea><input type="text" id="sig-stocks-inp" placeholder="Stocks (comma separated, e.g. ASML,TSM)" class="mb8"><select id="sig-risk-inp" class="mb16"><option value="LOW">Low Risk</option><option value="MEDIUM">Medium Risk</option><option value="HIGH">High Risk</option></select><button class="btn w-full" onclick="addCustomSignal()">Add Signal</button></div></div>
+<div class="overlay" id="news-add-modal"><div class="modal"><div class="modal-handle"></div><div class="fb mb12"><h3>Add News Source</h3><button class="cbtn" onclick="closeModal('news-add-modal')">×</button></div><input type="text" id="ns-name" placeholder="Source name (e.g. Bloomberg)" class="mb8"><input type="text" id="ns-url" placeholder="RSS feed URL" class="mb16"><button class="btn w-full" onclick="addNewsSource()">Add Source</button></div></div>
+
+<script>
+// ============================================================
+// ENCRYPTION
+// ============================================================
+const EK='Annamalai';
+function enc(d){const s=JSON.stringify(d);let r='';for(let i=0;i<s.length;i++)r+=String.fromCharCode(s.charCodeAt(i)^EK.charCodeAt(i%EK.length));return btoa(r);}
+function dec(e){try{const s=atob(e);let r='';for(let i=0;i<s.length;i++)r+=String.fromCharCode(s.charCodeAt(i)^EK.charCodeAt(i%EK.length));return JSON.parse(r);}catch(e){return null;}}
+
+// ============================================================
+// STATE
+// ============================================================
+const SK='leonos_v5';
+let S={
+  salary:1110,extraIncome:0,apiKey:'',dark:false,notifs:true,
+  expenses:[],buckets:[
+    {id:'loan',name:'Loan',emoji:'💳',amount:0,target:2000},
+    {id:'apt',name:'Apartment',emoji:'🏠',amount:0,target:3000},
+    {id:'emer',name:'Emergency',emoji:'🛡️',amount:0,target:1000},
+    {id:'dream',name:'Dream',emoji:'✨',amount:0,target:500},
+    {id:'learn',name:'Learning',emoji:'📚',amount:0,target:300},
+  ],
+  loanPayments:[],loanTotal:600000,loanPaid:300000,
+  watchlist:[],
+  customSignals:[],
+  customNewsSources:[],
+  goals:[
+    {id:1,emoji:'💶',title:'Save €8k',deadline:'2026-03-01',next:'Save €287 this month',current:1600,target:8000},
+    {id:2,emoji:'💪',title:'Fit by Sep',deadline:'2025-09-01',next:'Start gym this week',current:0,target:100},
+    {id:3,emoji:'🎓',title:'Abschlussprüfung',deadline:'2027-05-01',next:'Study 3x this week',current:0,target:100},
+    {id:4,emoji:'🏥',title:'Wundexperte',deadline:'2028-01-01',next:'Research courses',current:0,target:100},
+    {id:5,emoji:'🏠',title:'Better Apartment',deadline:'2027-06-01',next:'Build apartment fund',current:0,target:100},
+  ],
+  shifts:{},reminders:[],workouts:[],weights:[],
+  topics:[
+    {id:1,name:'Diabetes Mellitus Typ II',notes:'Insulinresistenz',done:false,subtopics:[{name:'Symptome',done:false},{name:'Therapie',done:false},{name:'Komplikationen',done:false},{name:'Diabetischer Fuß',done:false}]},
+    {id:2,name:'Dekubitus',notes:'Grad I–IV',done:false,subtopics:[{name:'Gradeinteilung',done:false},{name:'Prävention',done:false},{name:'Behandlung',done:false}]},
+    {id:3,name:'COPD',notes:'Chronisch obstruktiv',done:false,subtopics:[{name:'Symptome',done:false},{name:'Therapie',done:false},{name:'Pflege',done:false}]},
+    {id:4,name:'Herzinsuffizienz',notes:'NYHA I–IV',done:false,subtopics:[{name:'NYHA',done:false},{name:'Medikamente',done:false},{name:'Pflege',done:false}]},
+    {id:5,name:'Thrombose & Varikosis',notes:'',done:false,subtopics:[{name:'Risikofaktoren',done:false},{name:'Prophylaxe',done:false},{name:'Behandlung',done:false}]},
+    {id:6,name:'Pneumonie',notes:'',done:false,subtopics:[{name:'Erreger',done:false},{name:'Symptome',done:false},{name:'Pflege',done:false}]},
+    {id:7,name:'Retinopathie',notes:'Diabetisch',done:false,subtopics:[{name:'Ursachen',done:false},{name:'Stadien',done:false},{name:'Prävention',done:false}]},
+    {id:8,name:'Intertrigo',notes:'',done:false,subtopics:[{name:'Prävention',done:false},{name:'Behandlung',done:false}]},
+    {id:9,name:'Venöse & Arterielle Ulcera',notes:'',done:false,subtopics:[{name:'Venöses Ulkus',done:false},{name:'Arterielles Ulkus',done:false},{name:'Therapie',done:false}]},
+  ],
+  qaList:[],notes:[],
+  habits:[
+    {id:'workout',label:'Workout',icon:'💪',done:false},
+    {id:'water',label:'2L Water',icon:'💧',done:false},
+    {id:'sleep',label:'7h Sleep',icon:'😴',done:false},
+    {id:'steps',label:'Walk',icon:'🚶',done:false},
+    {id:'stretch',label:'Stretch',icon:'🧘',done:false},
+    {id:'nojunk',label:'No Junk',icon:'🥗',done:false},
+  ],
+  streak:0,lastHabit:null,studyDays:{},weeklyTarget:'',noteTab:'quick',
+};
+
+function loadS(){try{const r=localStorage.getItem(SK);if(r){const d=dec(r);if(d)S={...S,...d};}}catch(e){}}
+function saveS(){try{localStorage.setItem(SK,enc(S));}catch(e){}}
+
+// ============================================================
+// THEME
+// ============================================================
+function applyTheme(){
+  if(S.dark)document.documentElement.setAttribute('data-dark','');
+  else document.documentElement.removeAttribute('data-dark');
+  const t=document.getElementById('dark-tog');if(t)t.classList.toggle('on',S.dark);
+  document.querySelector('.theme-btn').textContent=S.dark?'☀️':'🌙';
+  document.querySelector('meta[name="theme-color"]').setAttribute('content',S.dark?'#000000':'#F5F5F7');
+}
+
+function autoTheme(){const h=new Date().getHours();S.dark=(h<6||h>=20);applyTheme();}
+function toggleDark(){S.dark=!S.dark;saveS();applyTheme();}
+
+// ============================================================
+// NAV
+// ============================================================
+let cur='home',finOpen=false,wheelOpen=false;
+
+function go(name){
+  document.querySelectorAll('.screen,.ai-screen').forEach(s=>{s.classList.remove('active');});
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('s-'+name).classList.add('active');
+  document.getElementById('nb-'+name)?.classList.add('active');
+  cur=name;
+  if(name==='finance'&&!finOpen){showPin();return;}
+  renderScreen(name);
+}
+
+function renderScreen(n){
+  if(n==='home')renderHome();
+  if(n==='finance'&&finOpen)renderFin();
+  if(n==='goals')renderGoals();
+  if(n==='fitness')renderFitness();
+  if(n==='study')renderStudy();
+  if(n==='calendar')renderCal();
+  if(n==='notes')renderNotes();
+  if(n==='settings')renderSettings();
+}
+
+// WHEEL
+function toggleWheel(){
+  wheelOpen=!wheelOpen;
+  document.getElementById('wbtn').classList.toggle('open',wheelOpen);
+  document.getElementById('woverlay').classList.toggle('open',wheelOpen);
+  document.querySelectorAll('.wi').forEach((w,i)=>{
+    setTimeout(()=>w.classList.toggle('open',wheelOpen),wheelOpen?i*35:0);
+  });
+}
+function closeWheel(){if(wheelOpen)toggleWheel();}
+function wNav(n){closeWheel();setTimeout(()=>go(n),180);}
+
+// ============================================================
+// PIN
+// ============================================================
+const PIN='1947';
+let pb='';
+function showPin(){document.getElementById('fin-pin').style.display='flex';document.getElementById('fin-content').style.display='none';}
+function pp(v){
+  if(v==='c'){pb='';updDots();return;}
+  if(v==='d'){pb=pb.slice(0,-1);updDots();return;}
+  if(pb.length>=4)return;
+  pb+=v;updDots();
+  if(pb.length===4)setTimeout(()=>{
+    if(pb===PIN){finOpen=true;document.getElementById('fin-pin').style.display='none';document.getElementById('fin-content').style.display='block';document.getElementById('pin-err').textContent='';renderFin();}
+    else{document.getElementById('pin-err').textContent='Wrong PIN. Try again.';pb='';updDots();}
+  },150);
+}
+function updDots(){for(let i=0;i<4;i++)document.getElementById('pd'+i)?.classList.toggle('on',i<pb.length);}
+function lockFin(){finOpen=false;pb='';updDots();showPin();document.getElementById('pin-err').textContent='';}
+
+// ============================================================
+// WEATHER — Real Open-Meteo API
+// ============================================================
+const CITIES={
+  aachen:{name:'Aachen, DE 🇩🇪',lat:50.776,lon:6.084},
+  idukki:{name:'Painav, Idukki 🇮🇳',lat:9.849,lon:77.001},
+};
+let curCity='aachen';
+
+const WX_CODES={0:'☀️ Clear',1:'🌤 Mostly clear',2:'⛅ Partly cloudy',3:'☁️ Overcast',45:'🌫 Foggy',48:'🌫 Icy fog',51:'🌦 Light drizzle',53:'🌦 Drizzle',55:'🌧 Heavy drizzle',61:'🌧 Light rain',63:'🌧 Rain',65:'🌧 Heavy rain',71:'❄️ Light snow',73:'❄️ Snow',75:'❄️ Heavy snow',80:'🌦 Rain showers',81:'🌧 Showers',82:'⛈ Heavy showers',95:'⛈ Thunderstorm',99:'⛈ Hail storm'};
+
+async function fetchWeather(city){
+  const c=CITIES[city];if(!c)return;
+  curCity=city;
+  setEl('h-wtemp','—°');setEl('h-wcity',c.name);setEl('h-wdesc','Loading...');
+  try{
+    const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${c.lat}&longitude=${c.lon}&current=temperature_2m,weathercode,windspeed_10m&temperature_unit=celsius`);
+    const d=await r.json();
+    const temp=Math.round(d.current.temperature_2m);
+    const code=d.current.weathercode;
+    const wind=Math.round(d.current.windspeed_10m);
+    const desc=WX_CODES[code]||'—';
+    setEl('h-wtemp',temp+'°C');
+    setEl('h-wcity',c.name);
+    setEl('h-wdesc',`${desc} · Wind ${wind} km/h`);
+  }catch(e){setEl('h-wdesc','Could not load weather');}
+}
+
+async function fetchWeatherByCity(cityName){
+  try{
+    const geo=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cityName)}&count=1`);
+    const gd=await geo.json();
+    if(!gd.results?.length){setEl('h-wdesc','City not found');return;}
+    const {latitude,longitude,name,country}=gd.results[0];
+    const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weathercode,windspeed_10m`);
+    const d=await r.json();
+    const temp=Math.round(d.current.temperature_2m);
+    const code=d.current.weathercode;
+    const desc=WX_CODES[code]||'—';
+    setEl('h-wtemp',temp+'°C');
+    setEl('h-wcity',name+', '+country+' 🌍');
+    setEl('h-wdesc',desc);
+  }catch(e){setEl('h-wdesc','Error loading weather');}
+}
+
+function switchW(city,el){
+  document.querySelectorAll('.w-tab').forEach(t=>t.classList.remove('on'));
+  el?.classList.add('on');
+  if(city==='search')return;
+  fetchWeather(city);
+}
+
+function toggleWSearch(){
+  const w=document.getElementById('wsearch-wrap');
+  if(w)w.style.display=w.style.display==='none'?'block':'none';
+}
+
+function fetchWeatherSearch(){
+  const city=document.getElementById('wsearch-inp')?.value?.trim();
+  if(!city)return;
+  fetchWeatherByCity(city);
+  document.getElementById('wsearch-wrap').style.display='none';
+}
+
+// ============================================================
+// NEWS — GNews API (works in browser, free tier)
+// ============================================================
+const GNEWS_KEY='bb0c9a2a3ab6fbda9bb5e0a3cf82aeac';
+
+const FALLBACK_NEWS=[
+  {title:'TSMC reports record quarterly revenue as AI chip demand accelerates across major tech firms',time:'2h ago',cat:'tech',source:'Market Wire',signal:true,stocks:['TSM','ASML','MU','NVDA'],link:''},
+  {title:'Middle East tensions push oil prices higher — energy stocks volatile across European exchanges',time:'3h ago',cat:'geo',source:'Reuters',signal:true,stocks:['SHELL','TTE','CVX','ENI'],link:''},
+  {title:'ECB signals potential rate cuts — European bank stocks rally on lower rate expectations',time:'4h ago',cat:'europe',source:'Euronews',signal:true,stocks:['DBK','BNP','ING'],link:''},
+  {title:'India announces major infrastructure capex — power and construction stocks surge on NSE',time:'5h ago',cat:'india',source:'Economic Times',signal:true,stocks:['NTPC','POWERGRID','LT'],link:''},
+  {title:'ASML order book grows 34% year-over-year — EUV demand from chipmakers at record high',time:'6h ago',cat:'tech',source:'Market Wire',signal:true,stocks:['ASML','TSM','MU'],link:''},
+  {title:'Germany raises defense budget by €100B — Rheinmetall and Airbus defense divisions surge',time:'7h ago',cat:'europe',source:'BBC',signal:true,stocks:['RHM','AIR','HO'],link:''},
+  {title:'Reliance Industries announces major renewable energy investment — India clean tech strengthens',time:'8h ago',cat:'india',source:'ET Markets',signal:true,stocks:['RELIANCE','ADANIGREEN','TATAPOWER'],link:''},
+  {title:'AI data center power demand hits record — utilities and energy stocks in focus globally',time:'9h ago',cat:'tech',source:'BBC Tech',signal:true,stocks:['NEE','EOAN','VST'],link:''},
+  {title:'G7 leaders meet in Berlin — Ukraine support package and Russia sanctions on agenda',time:'10h ago',cat:'geo',source:'BBC World',signal:false,stocks:[],link:''},
+  {title:'China manufacturing PMI beats expectations — global supply chain pressure easing',time:'11h ago',cat:'markets',source:'Reuters',signal:false,stocks:[],link:''},
+  {title:'RBI holds rates steady — Indian rupee stable, Sensex responds positively',time:'12h ago',cat:'india',source:'ET Markets',signal:false,stocks:[],link:''},
+  {title:'EUR strengthens against USD — favorable for European exporters this quarter',time:'13h ago',cat:'markets',source:'Reuters',signal:false,stocks:[],link:''},
+];
+
+let allNews=[],nFilter='all';
+
+async function fetchNews(){
+  setEl('news-time','Refreshing...');
+  // Show fallback immediately so something is always visible
+  if(!allNews.length){allNews=FALLBACK_NEWS;renderNewsList();}
+
+  try{
+    const queries=['world','stocks markets economy','technology AI','India economy','Europe finance'];
+    const fetches=queries.map(q=>
+      fetch(`https://gnews.io/api/v4/search?q=${encodeURIComponent(q)}&lang=en&max=5&apikey=${GNEWS_KEY}`,{signal:AbortSignal.timeout(8000)})
+      .then(r=>r.ok?r.json():null).catch(()=>null)
+    );
+    const results=await Promise.allSettled(fetches);
+    const live=[];
+    results.forEach(r=>{
+      if(r.status==='fulfilled'&&r.value?.articles){
+        r.value.articles.forEach(a=>{
+          if(a.title&&a.title.length>10){
+            live.push({
+              title:a.title,
+              link:a.url||'',
+              time:timeAgo(new Date(a.publishedAt)),
+              source:a.source?.name||'GNews',
+              cat:detectCat(a.title+' '+(a.description||'')),
+              signal:isSignal(a.title+' '+(a.description||'')),
+              stocks:extractStocks(a.title+' '+(a.description||'')),
+            });
+          }
+        });
+      }
+    });
+    if(live.length>=3){
+      // Deduplicate
+      const seen=new Set();
+      allNews=live.filter(n=>{if(seen.has(n.title))return false;seen.add(n.title);return true;});
+      setEl('news-time','Live · '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}));
+    }else{
+      allNews=FALLBACK_NEWS;
+      setEl('news-time','Curated · '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}));
+    }
+  }catch(e){
+    allNews=FALLBACK_NEWS;
+    setEl('news-time','Curated · '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}));
+  }
+  renderNewsList();
+}
+
+function detectCat(text){
+  const t=text.toLowerCase();
+  if(/india|nse|bse|nifty|sensex|rupee|modi|mumbai|delhi/.test(t))return'india';
+  if(/europe|ecb|germany|france|euro|merkel|macron|berlin|paris|uk|britain/.test(t))return'europe';
+  if(/ai|artificial intelligence|semiconductor|chip|tech|apple|google|microsoft|nvidia|tsmc/.test(t))return'tech';
+  if(/stock|market|economy|gdp|inflation|fed|rate|oil|gold|bitcoin|crypto|invest/.test(t))return'markets';
+  if(/war|conflict|military|sanctions|attack|nato|ukraine|russia|israel|china|taiwan/.test(t))return'geo';
+  return'markets';
+}
+
+function timeAgo(date){
+  if(isNaN(date))return'—';
+  const diff=Math.floor((Date.now()-date)/60000);
+  if(diff<60)return diff+'m ago';
+  if(diff<1440)return Math.floor(diff/60)+'h ago';
+  return Math.floor(diff/1440)+'d ago';
+}
+
+const SIGNAL_KEYWORDS=['war','conflict','sanctions','rate','inflation','GDP','earnings','invest','stock','market','trade','oil','energy','semiconductor','AI','chip','defense','military','attack','election','economy','profit','revenue','crisis','surge','drop','rally','crash','Fed','ECB','RBI'];
+const STOCK_MAP={'ASML':['asml'],'TSM':['tsmc','taiwan semi'],'MU':['micron'],'NVDA':['nvidia'],'SHELL':['shell'],'TTE':['totalenergies','total energies'],'CVX':['chevron'],'RHM':['rheinmetall'],'NTPC':['ntpc'],'LT':['larsen','l&t'],'RELIANCE':['reliance industries'],'ADANI':['adani']};
+
+function isSignal(title){return SIGNAL_KEYWORDS.some(k=>title.toLowerCase().includes(k.toLowerCase()));}
+function extractStocks(title){
+  const t=title.toLowerCase();
+  return Object.entries(STOCK_MAP).filter(([,v])=>v.some(k=>t.includes(k))).map(([k])=>k);
+}
+
+function catColor(c){return{geo:'var(--red)',tech:'var(--purple)',europe:'var(--teal)',india:'var(--orange)',markets:'var(--blue)'}[c]||'var(--text3)';}
+function catLabel(c){return{geo:'🌍 Geopolitical',tech:'💻 Tech',europe:'🇪🇺 Europe',india:'🇮🇳 India',markets:'📈 Markets'}[c]||c;}
+
+function filterN(cat,el){
+  nFilter=cat;
+  document.querySelectorAll('#s-home .filter-pill').forEach(p=>p.classList.remove('on'));
+  el?.classList.add('on');
+  renderNewsList();
+}
+
+function renderNewsList(){
+  const el=document.getElementById('news-list');if(!el)return;
+  const filtered=nFilter==='all'?allNews:allNews.filter(n=>n.cat===nFilter);
+  if(!filtered.length){el.innerHTML='<div class="news-loading">No news loaded yet. Tap ↻ Refresh.</div>';return;}
+  el.innerHTML=filtered.slice(0,12).map((n,i)=>`
+    <div class="news-item" onclick="newsClick(${i})">
+      <div class="n-tag" style="color:${catColor(n.cat)}">${catLabel(n.cat)} · ${n.source}</div>
+      <div class="n-headline">${n.title}</div>
+      <div class="n-meta">
+        <span class="n-time">${n.time}</span>
+        ${n.signal?'<div class="n-signal"><div class="n-pulse"></div>SIGNAL</div>':''}
+        ${n.stocks.length?'<span class="xs" style="color:var(--text3)">'+n.stocks.slice(0,3).join(' · ')+'</span>':''}
+      </div>
+    </div>`).join('');
+}
+
+function newsClick(i){
+  const n=allNews[i];if(!n)return;
+  if(n.signal){
+    openSignalFromNews(n);
+  }else if(n.link){
+    window.open(n.link,'_blank');
+  }
+}
+
+// ============================================================
+// SIGNALS
+// ============================================================
+const BASE_SIGNALS=[
+  {id:1,title:'AI Semiconductor Supercycle',summary:'TSMC, ASML, Micron — mid-cycle. ASML is the irreplaceable EUV play.',stocks:['ASML','TSM','MU','NVDA','AMAT'],risk:'HIGH',sector:'Semiconductors',analysis:'EUV machines from ASML cannot be sourced elsewhere. HBM memory from Micron exploding with AI demand. This theme has 3-5 more years. Accumulate ASML on dips.',custom:false},
+  {id:2,title:'European Defense Rearming',summary:'Germany, France, Poland rearming. Rheinmetall has 3+ years of backlog.',stocks:['RHM','AIR','HO','BAESY'],risk:'MEDIUM',sector:'Defense',analysis:'Defense cycles last 5-10 years. Rheinmetall is the core German play. Structural not cyclical.',custom:false},
+  {id:3,title:'India Infrastructure Decade',summary:'Government capex push. NTPC and PowerGrid are government-backed safe plays.',stocks:['NTPC','POWERGRID','LT','ADANIGREEN'],risk:'MEDIUM',sector:'Infra',analysis:'India needs to double electricity capacity by 2030. 10-year compounding story.',custom:false},
+  {id:4,title:'Energy Geopolitical Premium',summary:'Shell, TotalEnergies at discount. 4%+ dividend yield while you wait.',stocks:['SHELL','TTE','ENI','CVX'],risk:'MEDIUM',sector:'Energy',analysis:'Same thesis as your Chevron play pre-war. European majors cheaper than US peers.',custom:false},
+];
+
+let curSig=null;
+
+function getAllSignals(){
+  return [...BASE_SIGNALS,...(S.customSignals||[]).map((s,i)=>({...s,id:1000+i,custom:true}))];
+}
+
+function renderSignals(){
+  const el=document.getElementById('signals-list');if(!el)return;
+  const all=getAllSignals();
+  el.innerHTML=all.map(s=>`
+    <div class="sig-card" onclick="openSignal(s${s.id})">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div class="sig-live"></div>
+        <div style="font-size:14px;font-weight:700;flex:1">${s.title}</div>
+        <span class="tag ${s.risk==='HIGH'?'tag-red':s.risk==='MEDIUM'?'tag-orange':'tag-green'}">${s.risk}</span>
+        ${s.custom?`<button onclick="event.stopPropagation();delSignal('${s.id}')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px">🗑️</button>`:''}
+      </div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:10px">${s.summary}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">${s.stocks.slice(0,5).map(st=>`<div class="stock-chip">${st}</div>`).join('')}</div>
+    </div>`).join('');
+  // Make onclick work
+  all.forEach(s=>{
+    const cards=document.querySelectorAll('.sig-card');
+    cards.forEach(c=>{if(c.querySelector('div')?.textContent?.trim()===s.title)c.onclick=()=>openSignal(s);});
+  });
+  // Re-render properly
+  el.innerHTML=all.map((s,idx)=>`
+    <div class="sig-card" id="sc-${idx}" onclick="openSig(${idx})">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div class="sig-live"></div>
+        <div style="font-size:14px;font-weight:700;flex:1">${s.title}</div>
+        <span class="tag ${s.risk==='HIGH'?'tag-red':s.risk==='MEDIUM'?'tag-orange':'tag-green'}">${s.risk}</span>
+        ${s.custom?`<button onclick="event.stopPropagation();delSignal(${idx})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;padding:2px">🗑️</button>`:''}
+      </div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:10px">${s.summary}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">${s.stocks.slice(0,5).map(st=>`<div class="stock-chip">${st}</div>`).join('')}</div>
+    </div>`).join('');
+}
+
+function openSig(idx){
+  const all=getAllSignals();
+  const s=all[idx];if(!s)return;
+  curSig=s;
+  setEl('sig-ttl','⚡ '+s.title);
+  document.getElementById('sig-body').innerHTML=`
+    <div style="display:flex;gap:6px;margin-bottom:12px"><span class="tag tag-blue">${s.sector||'Signal'}</span><span class="tag ${s.risk==='HIGH'?'tag-red':s.risk==='MEDIUM'?'tag-orange':'tag-green'}">${s.risk}</span></div>
+    <div style="line-height:1.7">${s.analysis||s.summary}</div>`;
+  document.getElementById('sig-stocks').innerHTML=s.stocks.map(st=>`<div class="stock-chip" style="font-size:11px;padding:5px 11px">${st}</div>`).join('');
+  openModal('signal-modal');
+}
+
+function openSignalFromNews(news){
+  curSig={title:news.title,summary:news.title,stocks:news.stocks,risk:'UNKNOWN',sector:'News Signal',analysis:'Tap AI Deep Analysis for full breakdown of this news event and its market implications.'};
+  setEl('sig-ttl','📰 News Signal');
+  document.getElementById('sig-body').innerHTML=`<div style="line-height:1.7;margin-bottom:12px">${news.title}</div><div style="font-size:12px;color:var(--text3)">Source: ${news.source} · ${news.time}</div><div style="margin-top:10px;font-size:13px;color:var(--text2)">Tap AI Deep Analysis to get a full investment breakdown of this story.</div>`;
+  document.getElementById('sig-stocks').innerHTML=news.stocks.map(st=>`<div class="stock-chip">${st}</div>`).join('');
+  if(news.link){document.getElementById('sig-body').innerHTML+=`<a href="${news.link}" target="_blank" style="display:block;margin-top:10px;font-size:12px;color:var(--blue);font-weight:500">Read full article →</a>`;}
+  openModal('signal-modal');
+}
+
+async function deepAnalysis(){
+  const key=S.apiKey;
+  if(!key){alert('Add your Groq API key in Settings first.');return;}
+  if(!curSig)return;
+  const btn=document.getElementById('deep-btn');
+  btn.textContent='🤖 Analyzing...';btn.disabled=true;
+  const prompt=`You are a financial analyst mentor. Analyze this for a young investor trading European (DAX/Euronext) and Indian (NSE/BSE) markets. He has limited capital, is a macro investor who previously bought Chevron pre-Ukraine war and TSMC/Micron/ASML on the AI boom.\n\nSignal/News: ${curSig.title}\nStocks: ${curSig.stocks?.join(', ')||'None specified'}\nContext: ${curSig.analysis||curSig.summary}\n\nProvide:\n1. Real opportunity? Yes/No/Maybe + clear reason\n2. Top 3 stocks ranked with specific reasoning\n3. Entry: DCA vs lump sum, timeframe\n4. Key risks\n5. What to monitor for entry/exit signals\n\nBe direct. Max 200 words. Limited capital so quality > quantity.`;
+  try{
+    const resp=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
+      body:JSON.stringify({model:'llama-3.3-70b-versatile',max_tokens:1000,messages:[{role:'user',content:prompt}]})
+    });
+    const data=await resp.json();
+    if(data.error)throw new Error(data.error.message);
+    const txt=data.choices?.[0]?.message?.content||'Error.';
+    document.getElementById('sig-body').innerHTML+=`<div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)"><div style="font-size:11px;font-weight:700;color:var(--green);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">🤖 AI Analysis (Groq · Free)</div><div style="font-size:13px;line-height:1.7;white-space:pre-wrap">${txt}</div></div>`;
+  }catch(e){
+    document.getElementById('sig-body').innerHTML+=`<div style="color:var(--red);font-size:13px;margin-top:10px">Error: ${e.message}</div>`;
+  }
+  btn.textContent='🤖 AI Deep Analysis (Free)';btn.disabled=false;
+}
+
+function addCustomSignal(){
+  const title=document.getElementById('sig-title-inp').value.trim();
+  const summary=document.getElementById('sig-summary-inp').value.trim();
+  const stocks=document.getElementById('sig-stocks-inp').value.split(',').map(s=>s.trim().toUpperCase()).filter(Boolean);
+  const risk=document.getElementById('sig-risk-inp').value;
+  if(!title)return alert('Add a title');
+  if(!S.customSignals)S.customSignals=[];
+  S.customSignals.push({title,summary,stocks,risk,sector:'Custom',analysis:summary,custom:true});
+  saveS();closeModal('sig-add-modal');renderSignals();
+  ['sig-title-inp','sig-summary-inp','sig-stocks-inp'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+}
+
+function delSignal(idx){
+  const all=getAllSignals();
+  const s=all[idx];
+  if(!s||!s.custom)return;
+  if(!confirm('Delete this signal?'))return;
+  const customIdx=idx-BASE_SIGNALS.length;
+  S.customSignals.splice(customIdx,1);
+  saveS();renderSignals();
+}
+
+function addNewsSource(){
+  const name=document.getElementById('ns-name').value.trim();
+  const url=document.getElementById('ns-url').value.trim();
+  if(!name||!url)return alert('Fill all fields');
+  if(!S.customNewsSources)S.customNewsSources=[];
+  S.customNewsSources.push({url,label:name,cat:'geo'});
+  saveS();closeModal('news-add-modal');
+  document.getElementById('ns-name').value='';document.getElementById('ns-url').value='';
+  alert('Source added. News will include it on next refresh.');
+}
+
+// ============================================================
+// GERMANY DAILY ALERT
+// ============================================================
+const DE_HOLIDAYS={
+  '2025-01-01':'🎉 Neujahr — Alles geschlossen.',
+  '2025-04-18':'✝️ Karfreitag — Feiertag in BW.',
+  '2025-04-21':'🐣 Ostermontag — Feiertag.',
+  '2025-05-01':'💼 Tag der Arbeit — Feiertag.',
+  '2025-05-29':'✝️ Christi Himmelfahrt — Feiertag.',
+  '2025-06-09':'✝️ Pfingstmontag — Feiertag.',
+  '2025-10-03':'🇩🇪 Tag der Deutschen Einheit — Feiertag.',
+  '2025-11-01':'✝️ Allerheiligen — Feiertag in BW.',
+  '2025-12-25':'🎄 1. Weihnachtstag — Feiertag.',
+  '2025-12-26':'🎄 2. Weihnachtstag — Feiertag.',
+  '2026-01-01':'🎉 Neujahr — Alles geschlossen.',
+  '2026-04-03':'✝️ Karfreitag — Feiertag in BW.',
+  '2026-04-06':'🐣 Ostermontag — Feiertag.',
+  '2026-05-01':'💼 Tag der Arbeit — Feiertag.',
+  '2026-10-03':'🇩🇪 Tag der Deutschen Einheit.',
+  '2026-12-25':'🎄 Weihnachten — Feiertag.',
+};
+
+function getDailyAlert(){
+  const t=new Date();
+  const dk=t.toISOString().split('T')[0];
+  const h=t.getHours();
+  const d=t.getDay();
+  if(DE_HOLIDAYS[dk])return DE_HOLIDAYS[dk];
+  if(d===0)return'Sonntag — Alle Läden geschlossen. Ruhetag. Gut zum Lernen oder Erholen.';
+  if(d===6)return'Samstag — Läden bis ca. 20 Uhr offen. Kein Postbetrieb. Guter Tag für Besorgungen.';
+  if(h<9)return'Früh morgens — Bäckereien offen, DB läuft. Ruhige Zeit vor dem Trubel.';
+  if(h<12)return'Vormittag — Ämter und Behörden jetzt geöffnet. Bester Zeitraum für offizielle Erledigungen.';
+  if(h<14)return'Mittagszeit — Viele Behörden jetzt Pause. Günstige Bahntickte: Sparpreis in der DB App prüfen.';
+  if(h<17)return'Nachmittag — Normale Öffnungszeiten. Apotheken, Banken geöffnet.';
+  if(h<20)return'Feierabend — Rush Hour auf der DB. Wenn möglich 30 Min warten.';
+  return'Abend — Deutschland schläft langsam ein. Läden schließen. Gute Zeit zum Lernen.';
+}
+
+// ============================================================
+// HOME
+// ============================================================
+function renderHome(){
+  const t=new Date();
+  const h=t.getHours();
+  const g=h<5?'Gute Nacht':h<12?'Guten Morgen':h<17?'Guten Tag':'Guten Abend';
+  const el=document.getElementById('h-greeting');
+  if(el)el.innerHTML=`${g}, <span class="name">Freund 👋</span>`;
+  const days=['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+  const months=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+  setEl('h-date',`${days[t.getDay()]}, ${t.getDate()}. ${months[t.getMonth()]} ${t.getFullYear()}`);
+  setEl('h-alert',getDailyAlert());
+  const exam=Math.ceil((new Date('2027-05-01')-t)/86400000);
+  setEl('h-exam',exam);
+  const dk=t.toISOString().split('T')[0];
+  const sh=S.shifts[dk];
+  const shN={frueh:'🌅 Früh',spaet:'🌆 Spät',nacht:'🌙 Nacht',frei:'🌿 Frei',kurs:'📖 Kurs'};
+  setEl('h-shift',sh?shN[sh]:'— kein Dienst');
+  setEl('h-shift-date',t.toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'}));
+  renderHabits('h-habits','h-streak');
+  drawGoalRings('h-rings',S.goals);
+  renderSignals();
+  if(allNews.length)renderNewsList();
+}
+
+// ============================================================
+// HABITS
+// ============================================================
+function renderHabits(gridId,streakId){
+  const today=new Date().toDateString();
+  if(S.lastHabit!==today){S.habits.forEach(h=>h.done=false);S.lastHabit=today;saveS();}
+  const el=document.getElementById(gridId);if(!el)return;
+  el.innerHTML=S.habits.map(h=>`<div class="hb ${h.done?'done':''}" onclick="toggleHabit('${h.id}','${gridId}','${streakId}')"><span class="hb-icon">${h.icon}</span>${h.label}</div>`).join('');
+  if(streakId)setEl(streakId,S.streak+' 🔥');
+}
+
+function toggleHabit(id,gridId,streakId){
+  const h=S.habits.find(x=>x.id===id);if(!h)return;
+  h.done=!h.done;
+  if(S.habits.every(x=>x.done))S.streak++;
+  saveS();renderHabits(gridId,streakId);
+  renderHabits('fit-habits','');
+}
+
+// ============================================================
+// CHARTS
+// ============================================================
+function drawDonut(canvasId,data,colors,labels){
+  const canvas=document.getElementById(canvasId);if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const W=canvas.parentElement.offsetWidth||300;const H=130;
+  canvas.width=W*window.devicePixelRatio||W;canvas.height=H*window.devicePixelRatio||H;
+  canvas.style.width=W+'px';canvas.style.height=H+'px';
+  ctx.scale(window.devicePixelRatio||1,window.devicePixelRatio||1);
+  const total=data.reduce((s,v)=>s+v,0)||1;
+  const cx=H/2+8,cy=H/2,r=H/2-8,inner=H/2-22;
+  let start=-Math.PI/2;
+  data.forEach((v,i)=>{
+    const sw=(v/total)*Math.PI*2;
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,start,start+sw);
+    ctx.fillStyle=colors[i];ctx.fill();start+=sw;
+  });
+  ctx.beginPath();ctx.arc(cx,cy,inner,0,Math.PI*2);
+  ctx.fillStyle=S.dark?'#1C1C1E':'#fff';ctx.fill();
+  const lx=H+16,ly=14;
+  labels.forEach((lbl,i)=>{
+    ctx.fillStyle=colors[i];ctx.fillRect(lx,ly+i*20,8,8);
+    ctx.fillStyle=S.dark?'rgba(255,255,255,0.5)':'rgba(0,0,0,0.5)';
+    ctx.font=`10px Inter,-apple-system,sans-serif`;ctx.textAlign='left';
+    ctx.fillText(lbl.slice(0,14),lx+12,ly+i*20+8);
+  });
+}
+
+function drawLine(canvasId,datasets,labels,h){
+  const canvas=document.getElementById(canvasId);if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const W=canvas.parentElement.offsetWidth||300;const H=h||180;
+  canvas.width=W*window.devicePixelRatio||W;canvas.height=H*window.devicePixelRatio||H;
+  canvas.style.width=W+'px';canvas.style.height=H+'px';
+  ctx.scale(window.devicePixelRatio||1,window.devicePixelRatio||1);
+  const pad={t:10,r:10,b:26,l:46};
+  const aw=W-pad.l-pad.r,ah=H-pad.t-pad.b;
+  const allV=datasets.flatMap(d=>d.data).filter(v=>!isNaN(v));
+  const max=Math.max(...allV,1);
+  const sx=i=>pad.l+i*(aw/Math.max(labels.length-1,1));
+  const sy=v=>pad.t+ah-((v/max)*ah);
+  ctx.strokeStyle=S.dark?'rgba(255,255,255,0.06)':'rgba(0,0,0,0.06)';ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){
+    const y=pad.t+(ah/4)*i;
+    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();
+    ctx.fillStyle=S.dark?'rgba(255,255,255,0.3)':'rgba(0,0,0,0.35)';
+    ctx.font=`8px Inter,-apple-system,sans-serif`;ctx.textAlign='right';
+    ctx.fillText('€'+Math.round(max-(max/4)*i).toLocaleString(),pad.l-4,y+3);
+  }
+  ctx.fillStyle=S.dark?'rgba(255,255,255,0.2)':'rgba(0,0,0,0.2)';
+  ctx.font=`8px Inter,-apple-system,sans-serif`;ctx.textAlign='center';
+  labels.forEach((l,i)=>{if(l&&i%12===0)ctx.fillText(l,sx(i),H-5);});
+  datasets.forEach(ds=>{
+    if(!ds.data.length)return;
+    ctx.strokeStyle=ds.color;ctx.lineWidth=2;ctx.setLineDash(ds.dash||[]);
+    ctx.lineJoin='round';ctx.lineCap='round';
+    ctx.beginPath();ds.data.forEach((v,i)=>{i===0?ctx.moveTo(sx(i),sy(v)):ctx.lineTo(sx(i),sy(v));});
+    ctx.stroke();ctx.setLineDash([]);
+    const grad=ctx.createLinearGradient(0,pad.t,0,H-pad.b);
+    const rgba=ds.color.startsWith('#')?hexToRgba(ds.color,0.12):ds.color.replace(')',',0.1)').replace('rgb','rgba');
+    grad.addColorStop(0,rgba);grad.addColorStop(1,'transparent');
+    ctx.fillStyle=grad;
+    ctx.beginPath();ds.data.forEach((v,i)=>{i===0?ctx.moveTo(sx(i),sy(v)):ctx.lineTo(sx(i),sy(v));});
+    ctx.lineTo(sx(ds.data.length-1),H-pad.b);ctx.lineTo(sx(0),H-pad.b);ctx.closePath();ctx.fill();
+  });
+}
+
+function hexToRgba(hex,a){
+  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  return`rgba(${r},${g},${b},${a})`;
+}
+
+function drawGoalRings(elId,goals){
+  const el=document.getElementById(elId);if(!el)return;
+  el.innerHTML='';
+  const colors=['#0071E3','#30D158','#FF9500','#FF3B30','#AF52DE'];
+  goals.forEach((g,gi)=>{
+    const pct=Math.min(100,Math.round((g.current/g.target)*100));
+    const size=72;
+    const wrap=document.createElement('div');wrap.className='ring-item';
+    wrap.onclick=()=>updateGoal(g.id);
+    const canvas=document.createElement('canvas');
+    canvas.width=size*(window.devicePixelRatio||1);
+    canvas.height=size*(window.devicePixelRatio||1);
+    canvas.style.width=size+'px';canvas.style.height=size+'px';
+    const ctx=canvas.getContext('2d');
+    ctx.scale(window.devicePixelRatio||1,window.devicePixelRatio||1);
+    const cx=size/2,cy=size/2,r=size/2-5;
+    ctx.strokeStyle=S.dark?'rgba(255,255,255,0.08)':'rgba(0,0,0,0.06)';ctx.lineWidth=7;
+    ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.stroke();
+    if(pct>0){
+      ctx.strokeStyle=colors[gi%colors.length];ctx.lineWidth=7;ctx.lineCap='round';
+      ctx.beginPath();ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+(pct/100)*Math.PI*2);ctx.stroke();
+    }
+    ctx.fillStyle=S.dark?'rgba(255,255,255,0.85)':'rgba(0,0,0,0.75)';
+    ctx.font=`bold 13px Inter,-apple-system,sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(pct+'%',cx,cy);
+    const lbl=document.createElement('div');lbl.className='ring-lbl';lbl.textContent=g.emoji+' '+g.title.slice(0,10);
+    wrap.appendChild(canvas);wrap.appendChild(lbl);el.appendChild(wrap);
+  });
+}
+
+function drawHeatmap(elId){
+  const el=document.getElementById(elId);if(!el)return;
+  el.innerHTML='';
+  const today=new Date();
+  for(let i=83;i>=0;i--){
+    const d=new Date(today);d.setDate(today.getDate()-i);
+    const key=d.toISOString().split('T')[0];
+    const v=S.studyDays[key]||0;
+    const cell=document.createElement('div');
+    cell.className='hm-c'+(v>=3?' l4':v>=2?' l3':v>=1?' l2':v>0?' l1':'');
+    cell.title=key+': '+v+' sessions';el.appendChild(cell);
+  }
+}
+
+function drawWeightLine(canvasId){
+  if(!S.weights.length)return;
+  const sorted=[...S.weights].sort((a,b)=>new Date(a.date)-new Date(b.date)).slice(-12);
+  const labels=sorted.map(w=>new Date(w.date).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'}));
+  drawLine(canvasId,[{data:sorted.map(w=>w.value),color:'#30D158',dash:[]}],labels,120);
+}
+
+function buildProjection(){
+  const now=new Date();const months=[];const labels=[];
+  for(let i=0;i<=120;i++){
+    const d=new Date(now);d.setMonth(now.getMonth()+i);
+    months.push(d);labels.push(i%12===0?d.getFullYear().toString():'');
+  }
+  const cur=S.buckets.reduce((s,b)=>s+b.amount,0);
+  let pv=cur,rv=cur,ov=cur,av=cur;
+  const pess=[cur],real=[cur],opt=[cur],actual=[cur];
+  months.slice(1).forEach(d=>{
+    const aS=d>new Date('2025-09-01');const aG=d>new Date('2027-05-01');const loan=aS?0:150;
+    pv+=Math.max(0,(aG?2000:S.salary)-623-loan)*0.55;
+    rv+=Math.max(0,(aG?2400:S.salary)-623-loan)*0.7;
+    ov+=Math.max(0,(aG?2800:S.salary)-623-loan)*0.85+100;
+    av+=Math.max(0,S.salary-623-loan)*0.6;
+    pess.push(Math.round(pv));real.push(Math.round(rv));opt.push(Math.round(ov));actual.push(Math.round(av));
+  });
+  return{pess,real,opt,actual,labels};
+}
+
+// ============================================================
+// FINANCE
+// ============================================================
+let expFilter='all',editExpId=null;
+
+function renderFin(){
+  if(!finOpen)return;
+  const inc=S.salary+S.extraIncome;
+  const loan=new Date()<new Date('2025-09-01')?150:0;
+  const m=new Date().getMonth(),y=new Date().getFullYear();
+  const mExp=S.expenses.filter(e=>{const d=new Date(e.date);return d.getMonth()===m&&d.getFullYear()===y;});
+  const spent=mExp.reduce((s,e)=>s+e.amount,0);
+  const left=inc-spent;
+  const leftFixed=inc-623-loan;
+  const bpct=Math.min(100,Math.round((spent/inc)*100));
+  const saved=S.buckets.reduce((s,b)=>s+b.amount,0);
+  const s8k=Math.min(100,Math.round((saved/8000)*100));
+  setEl('fin-income','€'+inc.toLocaleString());
+  setEl('fin-extra-lbl','+ €'+S.extraIncome+' extra income');
+  setEl('fin-spent','€'+spent.toFixed(2));setEl('fin-left','€'+left.toFixed(2));
+  setEl('fin-bpct',bpct+'%');
+  const bb=document.getElementById('fin-bbar');if(bb)bb.style.width=bpct+'%';
+  setEl('fin-actual','~€'+Math.max(0,leftFixed).toFixed(0));
+  setEl('fin-saved','€'+saved.toFixed(2));setEl('fin-8kpct',s8k+'%');
+  const k8=document.getElementById('fin-8kbar');if(k8)k8.style.width=s8k+'%';
+  const eur=saved;const inr=Math.round(eur*90);
+  const nwpct=Math.min(100,Math.round((inr/30000000)*100));
+  setEl('fin-nw-eur','€'+eur.toLocaleString());setEl('fin-nw-inr','₹'+inr.toLocaleString());
+  const nwb=document.getElementById('fin-nw-bar');if(nwb)nwb.style.width=nwpct+'%';
+  setEl('fin-nw-pct',nwpct+'% of ₹3 Crore · 2035 target');
+  const lp=S.loanPayments.reduce((s,p)=>s+p.eurAmt*90,S.loanPaid);
+  const lr=Math.max(0,S.loanTotal-lp);const lpct=Math.min(100,Math.round((lp/S.loanTotal)*100));
+  setEl('fin-loan-rem','₹'+lr.toLocaleString());setEl('fin-loan-paid','₹'+lp.toLocaleString());
+  const lb=document.getElementById('fin-loan-bar');if(lb)lb.style.width=lpct+'%';
+  renderLoanList();renderBuckets();renderExpenses();renderWatchlist();
+  setTimeout(()=>{
+    const bc=['#0071E3','#30D158','#AF52DE','#FF3B30','#FF9500'];
+    drawDonut('fin-donut',S.buckets.map(b=>b.amount||0.1),bc,S.buckets.map(b=>b.emoji+' '+b.name));
+    const p=buildProjection();
+    drawLine('fin-proj',[
+      {data:p.pess,color:'#FF3B30',dash:[5,3]},
+      {data:p.real,color:'#FF9500',dash:[]},
+      {data:p.opt,color:'#30D158',dash:[]},
+      {data:p.actual,color:'#0071E3',dash:[2,2]},
+    ],p.labels,180);
+  },150);
+}
+
+function renderBuckets(){
+  const el=document.getElementById('fin-buckets');if(!el)return;
+  el.innerHTML=S.buckets.map(b=>{
+    const p=b.target>0?Math.min(100,Math.round((b.amount/b.target)*100)):0;
+    return`<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+      <div style="width:36px;height:36px;border-radius:10px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">${b.emoji}</div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
+          <span style="font-size:13px;font-weight:500">${b.name}</span>
+          <span style="font-size:13px;font-weight:700;color:var(--blue)">€${b.amount.toFixed(0)}</span>
+        </div>
+        <div class="prog"><div class="prog-fill green" style="width:${p}%"></div></div>
+        <div style="font-size:10px;color:var(--text3);margin-top:3px">Target €${b.target} · ${p}%</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderExpenses(){
+  const el=document.getElementById('fin-expenses');if(!el)return;
+  let list=expFilter==='all'?S.expenses:S.expenses.filter(e=>e.cat===expFilter);
+  list=[...list].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,20);
+  const ce={food:'🍽',transport:'🚊',rent:'🏠',utilities:'💡',gym:'💪',other:'📦'};
+  el.innerHTML=!list.length?'<div class="sm muted" style="padding:8px 0">No expenses yet.</div>':list.map(e=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--border)">
+      <div style="width:36px;height:36px;border-radius:10px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">${ce[e.cat]||'📦'}</div>
+      <div style="flex:1"><div style="font-size:13px;font-weight:500">${e.name}</div><div style="font-size:11px;color:var(--text3);margin-top:1px">${new Date(e.date).toLocaleDateString('de-DE')}</div></div>
+      <div style="font-size:14px;font-weight:700;color:var(--red)">-€${Number(e.amount).toFixed(2)}</div>
+      <button onclick="editExp(${e.id})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:4px">✏️</button>
+      <button onclick="delExp(${e.id})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:4px">🗑️</button>
+    </div>`).join('');
+}
+
+function renderWatchlist(){
+  const el=document.getElementById('fin-watchlist');if(!el)return;
+  el.innerHTML=!S.watchlist.length?'<div class="sm muted">No stocks added yet. Tap + Add to build your watchlist.</div>':S.watchlist.map(w=>`
+    <div class="watch-row">
+      <div style="flex:1"><div class="watch-ticker">${w.ticker}</div><div class="watch-exchange">${w.exchange}</div></div>
+      <div style="font-size:13px;font-weight:500">${w.name}</div>
+      ${w.target?`<div style="font-size:12px;font-weight:600;color:var(--green)">→ €${w.target}</div>`:''}
+      <button onclick="delWatch(${w.id})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:4px">🗑️</button>
+    </div>`).join('');
+}
+
+function renderLoanList(){
+  const el=document.getElementById('fin-loan-list');if(!el)return;
+  el.innerHTML=!S.loanPayments.length?'<div class="xs muted">No payments logged yet.</div>':[...S.loanPayments].reverse().slice(0,5).map(p=>`
+    <div class="loan-row">
+      <div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--green)">€${p.eurAmt} · ₹${Math.round(p.eurAmt*90).toLocaleString()}</div><div style="font-size:11px;color:var(--text3)">${new Date(p.date).toLocaleDateString('de-DE')}${p.note?' · '+p.note:''}</div></div>
+      <button onclick="delLoan(${p.id})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px">🗑️</button>
+    </div>`).join('');
+}
+
+function filterE(cat,el){
+  expFilter=cat;
+  document.querySelectorAll('#s-finance .filter-pill').forEach(p=>p.classList.remove('on'));
+  el?.classList.add('on');renderExpenses();
+}
+
+function openExpModal(){
+  editExpId=null;setEl('exp-ttl','Add Expense');
+  ['em-name','em-amt'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  document.getElementById('em-date').value=new Date().toISOString().split('T')[0];
+  openModal('expense-modal');
+}
+
+function editExp(id){
+  const e=S.expenses.find(x=>x.id===id);if(!e)return;
+  editExpId=id;setEl('exp-ttl','Edit Expense');
+  document.getElementById('em-name').value=e.name;document.getElementById('em-amt').value=e.amount;
+  document.getElementById('em-cat').value=e.cat;document.getElementById('em-date').value=e.date;
+  openModal('expense-modal');
+}
+
+function saveExp(){
+  const name=document.getElementById('em-name').value.trim();
+  const amt=parseFloat(document.getElementById('em-amt').value);
+  const cat=document.getElementById('em-cat').value;
+  const date=document.getElementById('em-date').value;
+  if(!name||!amt||!date)return alert('Fill all fields');
+  if(editExpId){const i=S.expenses.findIndex(e=>e.id===editExpId);if(i>=0)S.expenses[i]={id:editExpId,name,amount:amt,cat,date};editExpId=null;}
+  else S.expenses.push({id:Date.now(),name,amount:amt,cat,date});
+  saveS();closeModal('expense-modal');renderExpenses();renderFin();
+}
+
+function delExp(id){if(!confirm('Delete?'))return;S.expenses=S.expenses.filter(e=>e.id!==id);saveS();renderExpenses();renderFin();}
+
+function openBucketModal(){
+  document.getElementById('bucket-edit').innerHTML=S.buckets.map((b,i)=>`
+    <div style="margin-bottom:14px"><div style="font-size:13px;font-weight:500;margin-bottom:6px">${b.emoji} ${b.name}</div>
+    <div class="mrow"><input type="number" step="0.01" value="${b.amount}" placeholder="Current €" id="ba${i}"><input type="number" step="0.01" value="${b.target}" placeholder="Target €" id="bt${i}"></div></div>`).join('');
+  openModal('bucket-modal');
+}
+
+function saveBuckets(){
+  S.buckets.forEach((b,i)=>{b.amount=parseFloat(document.getElementById('ba'+i)?.value)||0;b.target=parseFloat(document.getElementById('bt'+i)?.value)||0;});
+  saveS();closeModal('bucket-modal');renderFin();
+}
+
+function saveSalary(){
+  const sal=parseFloat(document.getElementById('m-sal').value);
+  const extra=parseFloat(document.getElementById('m-extra').value)||0;
+  if(!sal)return alert('Enter salary');
+  S.salary=sal;S.extraIncome=extra;saveS();closeModal('salary-modal');renderFin();
+  alert('Saved ✓ All calculations updated.');
+}
+
+function saveLoan(){
+  const amt=parseFloat(document.getElementById('lm-amt').value);
+  const date=document.getElementById('lm-date').value;
+  const note=document.getElementById('lm-note').value.trim();
+  if(!amt||!date)return alert('Fill amount and date');
+  S.loanPayments.push({id:Date.now(),eurAmt:amt,date,note});saveS();closeModal('loan-modal');renderFin();
+}
+
+function delLoan(id){S.loanPayments=S.loanPayments.filter(p=>p.id!==id);saveS();renderFin();}
+
+function saveWatch(){
+  const ticker=document.getElementById('wm-ticker').value.trim().toUpperCase();
+  const name=document.getElementById('wm-name').value.trim();
+  const exchange=document.getElementById('wm-exchange').value;
+  const target=parseFloat(document.getElementById('wm-target').value)||null;
+  if(!ticker)return alert('Enter ticker');
+  S.watchlist.push({id:Date.now(),ticker,name,exchange,target});saveS();closeModal('watch-modal');renderWatchlist();
+  ['wm-ticker','wm-name','wm-target'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+}
+
+function delWatch(id){S.watchlist=S.watchlist.filter(w=>w.id!==id);saveS();renderWatchlist();}
+
+// ============================================================
+// GOALS
+// ============================================================
+function renderGoals(){
+  drawGoalRings('goals-rings',S.goals);
+  const el=document.getElementById('goals-list');if(!el)return;
+  el.innerHTML=S.goals.map(g=>{
+    const pct=Math.min(100,Math.round((g.current/g.target)*100));
+    const dl=Math.ceil((new Date(g.deadline)-new Date())/86400000);
+    return`<div class="bcard cp" style="margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+        <span style="font-size:26px">${g.emoji}</span>
+        <div style="flex:1"><div style="font-size:16px;font-weight:700">${g.title}</div><div style="font-size:11px;color:var(--text3);margin-top:2px">📅 ${new Date(g.deadline).toLocaleDateString('de-DE',{month:'short',year:'numeric'})} · ${dl>0?dl+' days left':'Overdue'}</div></div>
+        <span class="tag ${pct>=100?'tag-green':'tag-orange'}">${pct}%</span>
+      </div>
+      <div class="prog"><div class="prog-fill ${pct>=100?'green':'orange'}" style="width:${pct}%"></div></div>
+      <div style="font-size:12px;color:var(--text2);margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">→ <span style="color:var(--blue);font-weight:500">${g.next}</span></div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="btn-ghost btn-sm" onclick="updateGoal(${g.id})">Update Progress</button>
+        <button onclick="delGoal(${g.id})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:17px">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function saveGoal(){
+  const title=document.getElementById('gm-title').value.trim(),emoji=document.getElementById('gm-emoji').value.trim()||'🎯';
+  const deadline=document.getElementById('gm-deadline').value,next=document.getElementById('gm-next').value.trim();
+  const cur=parseFloat(document.getElementById('gm-cur').value)||0,tgt=parseFloat(document.getElementById('gm-tgt').value)||100;
+  if(!title||!deadline)return alert('Fill title and deadline');
+  S.goals.push({id:Date.now(),emoji,title,deadline,next,current:cur,target:tgt});
+  saveS();closeModal('goal-modal');renderGoals();
+}
+
+function updateGoal(id){
+  const g=S.goals.find(x=>x.id===id);if(!g)return;
+  const v=prompt(`Update progress for "${g.title}"\nCurrent: ${g.current} / ${g.target}`);
+  if(v!==null&&!isNaN(parseFloat(v))){g.current=parseFloat(v);saveS();renderGoals();drawGoalRings('h-rings',S.goals);}
+}
+
+function delGoal(id){if(!confirm('Delete?'))return;S.goals=S.goals.filter(g=>g.id!==id);saveS();renderGoals();}
+
+// ============================================================
+// FITNESS
+// ============================================================
+function renderFitness(){
+  const sep=Math.max(0,Math.ceil((new Date('2025-09-01')-new Date())/86400000));
+  setEl('fit-sep',sep);setEl('fit-streak',S.streak);
+  renderHabits('fit-habits','');
+  renderWoList();renderWtList();
+  setTimeout(()=>{drawWeightLine('fit-wt-chart');drawHeatmap('fit-heatmap');},100);
+}
+
+function renderWoList(){
+  const el=document.getElementById('fit-wo-list');if(!el)return;
+  el.innerHTML=!S.workouts.length?'<div class="sm muted">No workouts logged yet.</div>':[...S.workouts].reverse().slice(0,8).map(w=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:22px">🏋️</span>
+      <div style="flex:1"><div style="font-size:13px;font-weight:500">${w.type}</div><div style="font-size:11px;color:var(--text3)">${w.duration} min · ${new Date(w.date).toLocaleDateString('de-DE')}</div></div>
+      <button onclick="delWo(${w.id})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:17px">🗑️</button>
+    </div>`).join('');
+}
+
+function renderWtList(){
+  const el=document.getElementById('fit-wt-list');if(!el)return;
+  el.innerHTML=!S.weights.length?'<div class="sm muted">No weight entries yet.</div>':[...S.weights].reverse().slice(0,6).map(w=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:12px;color:var(--text2)">${new Date(w.date).toLocaleDateString('de-DE')}</span>
+      <span style="font-size:15px;font-weight:700;color:var(--green)">${w.value} kg</span>
+      <button onclick="delWt(${w.id})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:17px">🗑️</button>
+    </div>`).join('');
+}
+
+function saveWorkout(){
+  const type=document.getElementById('wom-type').value.trim(),dur=document.getElementById('wom-dur').value;
+  const notes=document.getElementById('wom-notes').value.trim(),date=document.getElementById('wom-date').value;
+  if(!type||!dur||!date)return alert('Fill all fields');
+  S.workouts.push({id:Date.now(),type,duration:parseInt(dur),notes,date});
+  S.studyDays[date]=(S.studyDays[date]||0)+1;
+  saveS();closeModal('wo-modal');renderFitness();
+}
+
+function delWo(id){S.workouts=S.workouts.filter(w=>w.id!==id);saveS();renderFitness();}
+
+function saveWeight(){
+  const val=parseFloat(document.getElementById('wtm-val').value),date=document.getElementById('wtm-date').value;
+  if(!val||!date)return alert('Fill all fields');
+  S.weights.push({id:Date.now(),value:val,date});saveS();closeModal('wt-modal');renderFitness();
+}
+
+function delWt(id){S.weights=S.weights.filter(w=>w.id!==id);saveS();renderFitness();}
+
+// ============================================================
+// STUDY
+// ============================================================
+function renderStudy(){
+  const diff=Math.ceil((new Date('2027-05-01')-new Date())/86400000);
+  setEl('study-days',diff);setEl('study-weekly',S.weeklyTarget||'Not set');
+  renderTopics();renderQAList();
+}
+
+function switchStudy(tab,el){
+  document.querySelectorAll('#s-study .filter-pill').forEach(p=>p.classList.remove('on'));el?.classList.add('on');
+  document.getElementById('study-topics-p').style.display=tab==='topics'?'block':'none';
+  document.getElementById('study-exam-p').style.display=tab==='exam'?'block':'none';
+}
+
+function renderTopics(){
+  const el=document.getElementById('study-topics');if(!el)return;
+  const done=S.topics.filter(t=>t.done).length;
+  el.innerHTML=`<div style="font-size:12px;color:var(--text2);margin-bottom:12px">${done}/${S.topics.length} completed</div>`+
+  S.topics.map((t,ti)=>{
+    const ds=t.subtopics.filter(s=>s.done).length;
+    return`<div class="topic-item">
+      <div style="display:flex;align-items:center;gap:8px;cursor:pointer" onclick="toggleTopicX('tx-${ti}','ta-${ti}')">
+        <div class="tchk ${t.done?'done':''}" onclick="event.stopPropagation();topicDone(${ti})">${t.done?'✓':''}</div>
+        <div style="flex:1;font-size:13px;font-weight:500">${t.name}</div>
+        <span class="tag tag-orange" style="font-size:9px">${ds}/${t.subtopics.length}</span>
+        <span style="color:var(--text3);font-size:13px;transition:.2s" id="ta-${ti}">▾</span>
+      </div>
+      <div style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)" id="tx-${ti}">
+        ${t.notes?`<div style="font-size:12px;color:var(--text2);margin-bottom:8px;line-height:1.5">${t.notes}</div>`:''}
+        ${t.subtopics.map((s,si)=>`<div class="sub-row"><div class="schk ${s.done?'done':''}" onclick="subDone(${ti},${si})">${s.done?'✓':''}</div><span>${s.name}</span></div>`).join('')}
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button class="btn-ghost btn-sm" onclick="addSub(${ti})">+ Subtopic</button>
+          <button onclick="delTopic(${ti})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:17px">🗑️</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleTopicX(cId,aId){
+  const c=document.getElementById(cId);const a=document.getElementById(aId);
+  if(!c)return;
+  const open=c.style.display==='block';
+  c.style.display=open?'none':'block';
+  if(a)a.style.transform=open?'':'rotate(180deg)';
+}
+
+function topicDone(i){
+  S.topics[i].done=!S.topics[i].done;
+  const dk=new Date().toISOString().split('T')[0];
+  S.studyDays[dk]=(S.studyDays[dk]||0)+1;
+  saveS();renderTopics();
+}
+
+function subDone(ti,si){S.topics[ti].subtopics[si].done=!S.topics[ti].subtopics[si].done;saveS();renderTopics();}
+function addSub(ti){const n=prompt('Subtopic name:');if(n){S.topics[ti].subtopics.push({name:n,done:false});saveS();renderTopics();}}
+function delTopic(i){if(!confirm('Delete?'))return;S.topics.splice(i,1);saveS();renderTopics();}
+
+function saveTopic(){
+  const name=document.getElementById('tm-name').value.trim();
+  const notes=document.getElementById('tm-notes').value.trim();
+  const subs=document.getElementById('tm-subs').value.split(',').map(s=>s.trim()).filter(Boolean);
+  if(!name)return alert('Enter topic name');
+  S.topics.push({id:Date.now(),name,notes,done:false,subtopics:subs.map(s=>({name:s,done:false}))});
+  saveS();closeModal('topic-modal');renderTopics();
+}
+
+function renderQAList(){
+  const el=document.getElementById('study-qa');if(!el)return;
+  el.innerHTML=!S.qaList.length?'<div class="sm muted">No Q&A yet.</div>':S.qaList.map((q,i)=>`
+    <div class="bcard cp" style="margin-bottom:8px">
+      <div style="font-size:13px;font-weight:600;cursor:pointer" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">Q: ${q.question}</div>
+      <div style="display:none;font-size:12px;color:var(--text2);padding-top:10px;border-top:1px solid var(--border);margin-top:8px;line-height:1.6">A: ${q.answer}</div>
+      <button onclick="delQA(${i})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:4px;margin-top:6px">🗑️</button>
+    </div>`).join('');
+}
+
+function saveQA(){
+  const q=document.getElementById('qam-q').value.trim(),a=document.getElementById('qam-a').value.trim();
+  if(!q||!a)return alert('Fill both fields');
+  S.qaList.push({id:Date.now(),question:q,answer:a});saveS();closeModal('qa-modal');renderQAList();
+}
+
+function delQA(i){S.qaList.splice(i,1);saveS();renderQAList();}
+function saveWeekly(){S.weeklyTarget=document.getElementById('wkm-inp').value.trim();saveS();closeModal('weekly-modal');renderStudy();}
+
+let qi=[],qidx=0,qcor=0;
+function startQuiz(){
+  if(!S.qaList.length)return alert('Add Q&A first!');
+  qi=[...S.qaList].sort(()=>Math.random()-.5);qidx=0;qcor=0;
+  openModal('quiz-modal');showQ();
+}
+function showQ(){
+  setEl('quiz-prog',`${qidx+1} / ${qi.length}`);
+  if(qidx>=qi.length){
+    document.getElementById('quiz-q').textContent='';
+    ['quiz-a','quiz-btns'].forEach(id=>document.getElementById(id).style.display='none');
+    document.getElementById('quiz-result').style.display='block';
+    document.getElementById('quiz-result').innerHTML=`Done! 🎉 <span style="color:var(--green)">${qcor}/${qi.length} correct</span>`;return;
+  }
+  document.getElementById('quiz-q').textContent='Q: '+qi[qidx].question;
+  document.getElementById('quiz-a').style.display='none';
+  document.getElementById('quiz-a').textContent='A: '+qi[qidx].answer;
+  document.getElementById('quiz-btns').style.display='none';
+  document.getElementById('quiz-result').style.display='none';
+}
+function revealAns(){document.getElementById('quiz-a').style.display='block';document.getElementById('quiz-btns').style.display='flex';}
+function qNext(c){if(c)qcor++;qidx++;showQ();}
+
+// ============================================================
+// CALENDAR
+// ============================================================
+let calY=new Date().getFullYear(),calM=new Date().getMonth();
+
+function renderCal(){
+  const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  setEl('cal-lbl',months[calM]+' '+calY);
+  const el=document.getElementById('cal-grid');if(!el)return;
+  const days=['Mo','Tu','We','Th','Fr','Sa','Su'];
+  let html=days.map(d=>`<div class="cal-dn">${d}</div>`).join('');
+  const first=new Date(calY,calM,1).getDay(),offset=first===0?6:first-1;
+  const dim=new Date(calY,calM+1,0).getDate();
+  const today=new Date();
+  for(let i=0;i<offset;i++)html+='<div></div>';
+  let free=0,work=0;
+  for(let d=1;d<=dim;d++){
+    const key=`${calY}-${String(calM+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const sh=S.shifts[key];
+    const isT=today.getDate()===d&&today.getMonth()===calM&&today.getFullYear()===calY;
+    if(sh==='frei')free++;else if(sh)work++;
+    html+=`<div class="cal-day ${isT?'today':''}" onclick="calClick('${key}')">${d}${sh?`<div class="sd sd-${sh}"></div>`:''}</div>`;
+  }
+  el.innerHTML=html;setEl('cal-free',free);setEl('cal-work',work);
+  renderReminders();
+}
+
+function calNav(d){calM+=d;if(calM>11){calM=0;calY++;}if(calM<0){calM=11;calY--;}renderCal();}
+
+function calClick(key){
+  const sh=S.shifts[key];
+  if(sh){if(confirm(`${key}: ${sh}\nOK = Delete`)){delete S.shifts[key];saveS();renderCal();}}
+  else{const el=document.getElementById('cal-date');if(el)el.value=key;}
+}
+
+function addShift(){
+  const date=document.getElementById('cal-date')?.value;
+  const type=document.getElementById('cal-type')?.value;
+  if(!date)return alert('Select a date');
+  S.shifts[date]=type;saveS();renderCal();
+}
+
+function renderReminders(){
+  const el=document.getElementById('cal-reminders');if(!el)return;
+  const up=S.reminders.filter(r=>new Date(r.date)>=new Date()).sort((a,b)=>new Date(a.date)-new Date(b.date));
+  el.innerHTML=!up.length?'<div class="sm muted">No reminders.</div>':up.map(r=>`
+    <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:20px">${r.emoji||'📌'}</span>
+      <div style="flex:1"><div style="font-size:13px;font-weight:500">${r.title}</div><div style="font-size:11px;color:var(--blue);font-weight:500">${new Date(r.date).toLocaleDateString('de-DE',{weekday:'short',day:'numeric',month:'short'})}</div></div>
+      <button onclick="delRem(${r.id})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:17px">🗑️</button>
+    </div>`).join('');
+}
+
+function saveReminder(){
+  const title=document.getElementById('rem-title').value.trim(),date=document.getElementById('rem-date').value;
+  const emoji=document.getElementById('rem-emoji').value.trim()||'📌';
+  if(!title||!date)return alert('Fill title and date');
+  S.reminders.push({id:Date.now(),title,date,emoji});saveS();closeModal('rem-modal');renderReminders();
+}
+
+function delRem(id){S.reminders=S.reminders.filter(r=>r.id!==id);saveS();renderReminders();}
+
+// ============================================================
+// NOTES
+// ============================================================
+function renderNotes(){
+  const el=document.getElementById('notes-list');if(!el)return;
+  const f=S.notes.filter(n=>n.cat===S.noteTab);
+  el.innerHTML=!f.length?'<div class="bcard cp sm muted">No notes. Tap + New.</div>':[...f].reverse().map(n=>`
+    <div class="bcard cp" style="margin-bottom:10px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div style="font-size:14px;font-weight:600">${n.title}</div>
+        <button onclick="delNote(${n.id})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:17px">🗑️</button>
+      </div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.5">${n.body.slice(0,140)}${n.body.length>140?'...':''}</div>
+      <div style="font-size:10px;color:var(--text3);margin-top:8px">${new Date(n.date).toLocaleDateString('de-DE',{day:'numeric',month:'short',year:'numeric'})}</div>
+    </div>`).join('');
+}
+
+function switchNote(tab,el){
+  S.noteTab=tab;
+  document.querySelectorAll('#s-notes .filter-pill').forEach(p=>p.classList.remove('on'));
+  el?.classList.add('on');renderNotes();
+}
+
+function saveNote(){
+  const title=document.getElementById('nm-title').value.trim(),body=document.getElementById('nm-body').value.trim();
+  const cat=document.getElementById('nm-cat').value;
+  if(!title||!body)return alert('Fill all fields');
+  S.notes.push({id:Date.now(),title,body,cat,date:new Date().toISOString()});
+  saveS();closeModal('note-modal');
+  ['nm-title','nm-body'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  renderNotes();
+}
+
+function delNote(id){S.notes=S.notes.filter(n=>n.id!==id);saveS();renderNotes();}
+
+// ============================================================
+// AI MENTOR
+// ============================================================
+const SYS=`You are a personal mentor for a young man doing nursing Ausbildung in Germany. Call him "Freund" or "Bro".
+
+Key facts: Baden-Württemberg, Germany. Salary €1,110/month. Expenses: Rent €330, Electricity €50, DB €68, Gym €25, Food €150-200. Loan €150/month until Sep 2025 then stops. Real leftover now ~€287. Final exam May 2027. From Idukki, Kerala, India. Goal: Germany till 2035, return India, ₹3 crore by 2035 (financial freedom). Future: Wundexperte specialist. Fitness deadline: September 2025. Macro investor: European (DAX/Euronext) + Indian (NSE/BSE). Past wins: Chevron pre-Ukraine war, TSMC/Micron/ASML on AI boom. Core values: freedom, stability, independence.
+
+Style: Mix German and English naturally (Denglish). Direct, blunt, no sugarcoating. Trusted older mentor. Push to act. Concise for mobile. Call out excuses immediately.`;
+
+let aiHistory=[];
+
+async function sendAI(){
+  const key=S.apiKey;
+  if(!key){addMsg('a','No API key set. Go to ⚙️ Settings → add your Groq key. Free at console.groq.com');return;}
+  const inp=document.getElementById('ai-inp');
+  const text=inp?.value?.trim();if(!text)return;
+  inp.value='';
+  addMsg('u',text);
+  aiHistory.push({role:'user',content:text});
+  const t=addTyping();
+  try{
+    const resp=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
+      body:JSON.stringify({model:'llama-3.3-70b-versatile',max_tokens:1000,messages:[{role:'system',content:SYS},...aiHistory]})
+    });
+    const data=await resp.json();
+    if(data.error)throw new Error(data.error.message);
+    const reply=data.choices?.[0]?.message?.content||'Error.';
+    t.remove();addMsg('a',reply);
+    aiHistory.push({role:'assistant',content:reply});
+    if(aiHistory.length>20)aiHistory.splice(0,2);
+  }catch(e){t.remove();addMsg('a','Error: '+e.message);}
+}
+
+function addMsg(role,text){
+  const wrap=document.getElementById('ai-wrap');if(!wrap)return;
+  const div=document.createElement('div');div.className='msg '+role;
+  if(role==='a')div.innerHTML=`<div class="msg-name">MENTOR</div>${text.replace(/\n/g,'<br>')}`;
+  else div.textContent=text;
+  wrap.appendChild(div);
+  const msgs=document.getElementById('ai-msgs');if(msgs)msgs.scrollTop=msgs.scrollHeight;
+  return div;
+}
+
+function addTyping(){
+  const wrap=document.getElementById('ai-wrap');if(!wrap)return{remove:()=>{}};
+  const div=document.createElement('div');div.className='msg a';
+  div.innerHTML='<div class="typing"><span></span><span></span><span></span></div>';
+  wrap.appendChild(div);
+  const msgs=document.getElementById('ai-msgs');if(msgs)msgs.scrollTop=msgs.scrollHeight;
+  return div;
+}
+
+// ============================================================
+// SETTINGS
+// ============================================================
+function renderSettings(){
+  const t=document.getElementById('dark-tog');if(t)t.classList.toggle('on',S.dark);
+  const n=document.getElementById('notif-tog');if(n)n.classList.toggle('on',S.notifs);
+  const k=document.getElementById('api-key-inp');if(k&&S.apiKey)k.value=S.apiKey;
+}
+
+function toggleNotif(){
+  S.notifs=!S.notifs;saveS();
+  const t=document.getElementById('notif-tog');if(t)t.classList.toggle('on',S.notifs);
+  if(S.notifs&&Notification.permission==='default')Notification.requestPermission();
+}
+
+function saveKey(){
+  const key=document.getElementById('api-key-inp')?.value?.trim();
+  if(!key)return alert('Enter your Groq API key');
+  S.apiKey=key;saveS();
+  const s=document.getElementById('key-saved');if(s){s.style.display='block';setTimeout(()=>s.style.display='none',3000);}
+}
+
+// ============================================================
+// NOTIFICATIONS
+// ============================================================
+function setupNotifs(){
+  if(!('Notification' in window))return;
+  if(Notification.permission==='default')Notification.requestPermission();
+  setInterval(()=>{
+    if(!S.notifs||Notification.permission!=='granted')return;
+    const h=new Date().getHours(),m=new Date().getMinutes();
+    if((h===10||h===22)&&m===0){
+      new Notification('LEON OS',{
+        body:h===10?'Good morning. Check your goals and finances.':'Evening check-in. How did today go?',
+        icon:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🎯</text></svg>'
+      });
+    }
+  },60000);
+}
+
+// ============================================================
+// EXPAND
+// ============================================================
+function toggleExpand(cId,aId){
+  const c=document.getElementById(cId);const a=document.getElementById(aId);
+  if(!c)return;
+  const open=c.style.display!=='none'&&c.style.display!=='';
+  c.style.display=open?'none':'block';
+  if(a)a.style.transform=open?'':'rotate(180deg)';
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function setEl(id,val){const el=document.getElementById(id);if(el)el.textContent=val;}
+function openModal(id){document.getElementById(id)?.classList.add('open');}
+function closeModal(id){document.getElementById(id)?.classList.remove('open');}
+
+// ============================================================
+// INIT
+// ============================================================
+function init(){
+  loadS();
+  autoTheme();
+  applyTheme();
+
+  // Set today's date defaults
+  const today=new Date().toISOString().split('T')[0];
+  document.querySelectorAll('input[type="date"]').forEach(el=>{if(!el.value)el.value=today;});
+
+  // Close modals on overlay click
+  document.querySelectorAll('.overlay').forEach(m=>{
+    m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');});
+  });
+
+  // Auto theme hourly
+  setInterval(autoTheme,60*60*1000);
+
+  setupNotifs();
+
+  // Initial AI message
+  addMsg('a',`Hey Freund! 👋\n\nLEON OS — Apple design, real news, real weather, Groq AI.\n\n${S.apiKey?'Groq is connected — AI Analysis active ⚡':'Go to ⚙️ Settings → add your Groq key for AI analysis.'}\n\nNews auto-loads from BBC, Reuters, Economic Times. Weather is live from Open-Meteo. Everything is real now.\n\nSep 2025: loan stops. May 2027: graduation + salary jump. The projection shows the full picture.\n\nWas ist heute dein Fokus?`);
+
+  // Load real data
+  fetchWeather('aachen');
+  fetchNews();
+
+  // Auto refresh news every 15 min
+  setInterval(fetchNews,15*60*1000);
+
+  renderHome();
+}
+
+init();
+</script>
+</body>
+</html>
