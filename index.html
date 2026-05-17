@@ -610,9 +610,9 @@ textarea{resize:none}
         </div>
         <!-- API Key -->
         <div class="card mb12">
-          <div style="font-size:15px;font-weight:700;margin-bottom:4px">🔑 Anthropic API Key</div>
-          <div class="xs muted mb12">Your key is stored encrypted on this device only. Never sent anywhere.</div>
-          <input type="password" id="api-key-input" class="api-key-input mb8" placeholder="sk-ant-api03-...">
+          <div style="font-size:15px;font-weight:700;margin-bottom:4px">🔑 Google Gemini API Key</div>
+          <div class="xs muted mb12">Free · No credits needed. Get yours at aistudio.google.com</div>
+          <input type="password" id="api-key-input" class="api-key-input mb8" placeholder="AIzaSy...">
           <button class="btn w-full" onclick="saveAPIKey()">Save Key</button>
           <div style="font-size:12px;color:var(--accent2);margin-top:8px;display:none" id="api-key-status">✓ Key saved</div>
         </div>
@@ -952,20 +952,20 @@ function openSignal(id){
 
 async function deepAnalysis(){
   const key=S.apiKey;
-  if(!key){alert('API Key fehlt! Geh zu Settings und trag deinen Anthropic API Key ein.');return;}
+  if(!key){alert('API Key fehlt! Geh zu ⚙️ Settings und trag deinen Google Gemini API Key ein.');return;}
   if(!curSig)return;
   const btn=document.querySelector('#signal-modal .btn');
   btn.textContent='🤖 Analysiere...';btn.disabled=true;
   const prompt=`Financial analyst mentor. Analyze this investment signal for a young investor trading European (DAX/Euronext) and Indian (NSE/BSE) markets. He has limited capital and is a macro-event investor who previously bought Chevron before the Ukraine war and TSMC/Micron/ASML on the AI boom.\n\nSignal: ${curSig.title}\nStocks: ${curSig.stocks.join(', ')}\nContext: ${curSig.analysis}\n\nProvide:\n1. Real opportunity right now? Yes/No/Maybe + clear why\n2. Top 3 stocks ranked with specific reasoning\n3. Entry strategy: DCA vs lump sum, suggested timeframe\n4. Key risks to watch\n5. Specific indicators/news to monitor for entry/exit\n\nBe direct, specific, max 220 words. Quality > quantity for limited capital.`;
   try{
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+    const resp=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,{
       method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})
     });
     const data=await resp.json();
     if(data.error){throw new Error(data.error.message);}
-    const txt=data.content?.map(c=>c.text||'').join('')||'Error.';
+    const txt=data.candidates?.[0]?.content?.parts?.[0]?.text||'Error.';
     document.getElementById('sig-body').innerHTML+=`
       <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
         <div class="lbl" style="color:var(--accent2);margin-bottom:8px">🤖 AI ANALYSIS</div>
@@ -1655,7 +1655,7 @@ let aiHistory=[];
 
 async function sendAI(){
   const key=S.apiKey;
-  if(!key){addAIMsg('a','Kein API Key gesetzt! Geh zu ⚙️ Settings und trag deinen Anthropic API Key ein.');return;}
+  if(!key){addAIMsg('a','Kein API Key gesetzt! Geh zu ⚙️ Settings und trag deinen Google Gemini API Key ein. Kostenlos auf aistudio.google.com');return;}
   const inp=document.getElementById('ai-inp');
   const text=inp?.value?.trim();if(!text)return;
   inp.value='';
@@ -1663,14 +1663,15 @@ async function sendAI(){
   aiHistory.push({role:'user',content:text});
   const typing=addTyping();
   try{
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+    const msgs=[{parts:[{text:SYS+'\n\nConversation:\n'+aiHistory.map(m=>m.role+': '+m.content).join('\n')+'\nassistant:'}]}];
+    const resp=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,{
       method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:SYS,messages:aiHistory})
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({contents:msgs})
     });
     const data=await resp.json();
     if(data.error)throw new Error(data.error.message);
-    const reply=data.content?.map(c=>c.text||'').join('')||'Fehler.';
+    const reply=data.candidates?.[0]?.content?.parts?.[0]?.text||'Fehler.';
     typing.remove();addAIMsg('a',reply);
     aiHistory.push({role:'assistant',content:reply});
     if(aiHistory.length>20)aiHistory.splice(0,2);
@@ -1822,7 +1823,7 @@ function init(){
   setupNotifications();
 
   // Initial AI message
-  addAIMsg('a',`Hey Freund! 👋\n\nLEON OS v4 — clean, minimal, dein System.\n\n${S.apiKey?'API Key ist gesetzt — AI Analysis ist aktiv. ⚡':'Tipp: Geh zu ⚙️ Settings und trag deinen API Key ein für AI Analysis der Trader Signals.'}\n\nSep 2025 ist dein erster Wendepunkt — Loan stoppt, Überschuss steigt. Dann Graduation 2027 — Salary Sprung auf €2,400+. Die Projektion zeigt alles.\n\nWas ist heute dein Fokus?`);
+  addAIMsg('a',`Hey Freund! 👋\n\nLEON OS v4 — jetzt mit Google Gemini. Kostenlos, kein Credit limit.\n\n${S.apiKey?'Gemini Key ist gesetzt — AI Analysis aktiv! ⚡':'Tipp: Geh zu ⚙️ Settings → trag deinen Gemini Key ein. Kostenlos auf aistudio.google.com'}\n\nSep 2025 ist dein Wendepunkt — Loan stoppt. 2027 Graduation — Salary Sprung. Die Projektion zeigt alles.\n\nWas ist heute dein Fokus?`);
 
   renderHome();
   setTimeout(checkBreakingNews,3000);
