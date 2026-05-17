@@ -1,0 +1,1834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#ffffff">
+<title>LEON OS</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* ============ THEMES ============ */
+:root {
+  --bg:#f5f5f7;--bg2:#ffffff;--bg3:#f0f0f5;--bg4:#e8e8f0;
+  --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.15);
+  --accent:#f0a500;--accent2:#00b894;--accent3:#e84057;--accent4:#6c5ce7;--accent5:#0984e3;
+  --text:#1a1a2e;--text2:#6b6b8a;--text3:#a0a0b8;
+  --card:#ffffff;--shadow:0 2px 20px rgba(0,0,0,0.06);
+  --radius:20px;--radius-sm:12px;--radius-xs:8px;
+  --font:'Space Grotesk',sans-serif;--mono:'Space Mono',monospace;
+}
+[data-dark] {
+  --bg:#070710;--bg2:#0d0d1a;--bg3:#131325;--bg4:#1a1a2e;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.14);
+  --accent:#f0c040;--accent2:#00d4aa;--accent3:#ff4d6d;--accent4:#7c6af7;--accent5:#38bdf8;
+  --text:#eeeef5;--text2:#8888aa;--text3:#44445a;
+  --card:rgba(13,13,26,0.95);--shadow:0 2px 20px rgba(0,0,0,0.4);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--font);transition:background .35s,color .35s}
+
+#app{position:relative;z-index:1;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* ============ SCREENS ============ */
+.screen{display:none;position:absolute;inset:0;overflow-y:auto;padding:0 0 100px;animation:fadeUp .25s ease;background:var(--bg)}
+.screen.active{display:block}
+.screen-mentor{display:none;position:absolute;inset:0;flex-direction:column;background:var(--bg)}
+.screen-mentor.active{display:flex}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* ============ WHEEL NAV ============ */
+.wheel-btn{position:fixed;bottom:28px;right:24px;width:58px;height:58px;border-radius:50%;background:var(--accent);border:none;cursor:pointer;z-index:300;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(240,165,0,0.4);transition:.2s}
+[data-dark] .wheel-btn{box-shadow:0 4px 20px rgba(240,192,64,0.35)}
+.wheel-btn svg{width:24px;height:24px;stroke:#000;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;transition:.3s}
+.wheel-btn.open svg{transform:rotate(45deg)}
+.wheel-overlay{display:none;position:fixed;inset:0;z-index:250;background:rgba(0,0,0,0)}
+.wheel-overlay.open{display:block}
+.wheel-items{position:fixed;bottom:28px;right:24px;z-index:260;pointer-events:none}
+.wheel-item{position:absolute;opacity:0;transform:scale(0.5);transition:.25s cubic-bezier(.34,1.56,.64,1);pointer-events:none;display:flex;align-items:center;gap:10px}
+.wheel-item.open{opacity:1;transform:scale(1);pointer-events:auto}
+.wheel-item-btn{width:50px;height:50px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow);font-size:20px;transition:.15s;flex-shrink:0}
+.wheel-item-btn:active{transform:scale(.93)}
+.wheel-label{background:var(--card);border:1px solid var(--border);border-radius:99px;padding:5px 12px;font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;box-shadow:var(--shadow);order:-1}
+/* Primary 4 — positioned in arc */
+.wi-home{bottom:74px;right:0}
+.wi-finance{bottom:120px;right:52px}
+.wi-calendar{bottom:140px;right:114px}
+.wi-fitness{bottom:120px;right:170px}
+/* Secondary — above primary */
+.wi-study{bottom:190px;right:4px}
+.wi-goals{bottom:220px;right:60px}
+.wi-notes{bottom:220px;right:126px}
+.wi-mentor{bottom:190px;right:180px}
+.wi-settings{bottom:150px;right:226px}
+
+/* ============ CARDS ============ */
+.card{background:var(--card);border-radius:var(--radius);padding:20px;margin-bottom:12px;box-shadow:var(--shadow);border:1px solid var(--border);transition:background .35s,box-shadow .35s}
+.card-sm{background:var(--card);border-radius:var(--radius-sm);padding:14px;margin-bottom:8px;box-shadow:var(--shadow);border:1px solid var(--border)}
+.card-accent{background:linear-gradient(135deg,var(--accent4),var(--accent5));color:#fff;border:none}
+.card-gold{background:linear-gradient(135deg,#f0a500,#ffcc02);color:#000;border:none}
+.card-teal{background:linear-gradient(135deg,#00b894,#00cec9);color:#000;border:none}
+
+/* ============ SECTION HEADER ============ */
+.section-pad{padding:0 20px}
+.page-header{padding:60px 20px 20px;display:flex;align-items:flex-end;justify-content:space-between}
+.page-title{font-size:32px;font-weight:700;letter-spacing:-0.5px}
+.page-sub{font-size:13px;color:var(--text2);margin-top:2px}
+
+/* ============ TYPE ============ */
+.lbl{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);margin-bottom:8px}
+.big{font-family:var(--mono);font-size:32px;font-weight:700;color:var(--accent);line-height:1}
+.muted{color:var(--text2)}.xs{font-size:11px}.sm{font-size:13px}.mono{font-family:var(--mono)}
+
+/* ============ BUTTONS ============ */
+.btn{background:var(--accent);color:#000;border:none;border-radius:99px;padding:10px 22px;font-family:var(--font);font-weight:700;font-size:13px;cursor:pointer;transition:.15s}
+.btn:active{transform:scale(.97)}
+.btn-ghost{background:transparent;border:1.5px solid var(--border2);color:var(--text2);border-radius:99px;padding:8px 16px;font-size:12px;cursor:pointer;font-family:var(--font);font-weight:500;transition:.15s}
+.btn-sm{padding:6px 14px;font-size:11px}
+.btn-teal{background:var(--accent2);color:#000}
+.btn-red{background:var(--accent3);color:#fff}
+.btn-purple{background:var(--accent4);color:#fff}
+.btn-blue{background:var(--accent5);color:#fff}
+
+/* ============ INPUTS ============ */
+input,textarea,select{background:var(--bg3);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--font);font-size:14px;padding:12px 14px;width:100%;outline:none;transition:.2s}
+input:focus,textarea:focus,select:focus{border-color:var(--accent);background:var(--card)}
+select option{background:var(--bg2)}
+textarea{resize:none}
+
+/* ============ TAGS ============ */
+.tag{display:inline-flex;align-items:center;border-radius:99px;padding:4px 10px;font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.04em}
+.ty{background:rgba(240,165,0,.12);color:var(--accent)}
+.tt{background:rgba(0,184,148,.12);color:var(--accent2)}
+.tr{background:rgba(232,64,87,.12);color:var(--accent3)}
+.tp{background:rgba(108,92,231,.12);color:var(--accent4)}
+.tb{background:rgba(9,132,227,.12);color:var(--accent5)}
+
+/* ============ PROGRESS ============ */
+.prog{background:var(--bg3);border-radius:99px;height:6px;overflow:hidden;margin-top:6px}
+.pf{height:100%;border-radius:99px;background:var(--accent);transition:width .7s cubic-bezier(.4,0,.2,1)}
+.pf-t{background:var(--accent2)}.pf-r{background:var(--accent3)}.pf-p{background:var(--accent4)}.pf-b{background:var(--accent5)}
+
+/* ============ MODAL ============ */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:flex-end;justify-content:center;backdrop-filter:blur(8px)}
+.overlay.open{display:flex;animation:fadeUp .2s}
+.modal{background:var(--card);border-radius:28px 28px 0 0;padding:24px 20px 44px;width:100%;max-width:560px;max-height:88vh;overflow-y:auto;transition:background .35s}
+.modal-handle{width:36px;height:4px;background:var(--border2);border-radius:99px;margin:0 auto 20px}
+.mrow{display:flex;gap:8px;margin-bottom:10px}
+.cbtn{background:var(--bg3);border:none;color:var(--text2);font-size:18px;cursor:pointer;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:50%;float:right}
+
+/* ============ LAYOUT ============ */
+.flex{display:flex;align-items:center}
+.fb{display:flex;align-items:center;justify-content:space-between}
+.g4{gap:4px}.g8{gap:8px}.g12{gap:12px}.g16{gap:16px}
+.mb4{margin-bottom:4px}.mb8{margin-bottom:8px}.mb12{margin-bottom:12px}.mb16{margin-bottom:16px}.mb20{margin-bottom:20px}
+.mt4{margin-top:4px}.mt8{margin-top:8px}.mt12{margin-top:12px}.mt16{margin-top:16px}
+.w-full{width:100%}
+.divider{height:1px;background:var(--border);margin:14px 0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.sx{overflow-x:auto;display:flex;gap:6px;padding-bottom:4px;scrollbar-width:none}
+.sx::-webkit-scrollbar{display:none}
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px}
+
+/* ============ HOME ============ */
+.home-hero{padding:56px 20px 0}
+.home-greeting{font-size:28px;font-weight:700;letter-spacing:-0.3px;line-height:1.2}
+.home-greeting span{color:var(--accent4)}
+.home-date{font-size:13px;color:var(--text2);margin-top:4px;font-family:var(--mono)}
+.home-alert{background:linear-gradient(135deg,var(--accent4),var(--accent5));border-radius:var(--radius);padding:16px 20px;margin:16px 20px 0;color:#fff}
+.alert-label{font-size:10px;font-weight:700;letter-spacing:.1em;opacity:.8;margin-bottom:4px;font-family:var(--mono)}
+.alert-text{font-size:13px;font-weight:500;line-height:1.5}
+.exam-strip{margin:12px 20px 0;background:var(--card);border-radius:var(--radius-sm);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow);border:1px solid var(--border)}
+.exam-days{font-family:var(--mono);font-size:26px;font-weight:700;color:var(--accent4)}
+.exam-label{font-size:11px;color:var(--text2);margin-top:2px}
+.shift-badge{background:var(--bg3);border-radius:var(--radius-xs);padding:8px 14px;text-align:right}
+.shift-val{font-size:13px;font-weight:600}
+
+/* ============ NEWS ============ */
+.news-section{margin:20px 20px 0}
+.news-filter{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none;margin-bottom:12px}
+.news-filter::-webkit-scrollbar{display:none}
+.nf-pill{padding:6px 14px;border-radius:99px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);color:var(--text2);background:var(--card);white-space:nowrap;transition:.15s;font-family:var(--mono)}
+.nf-pill.on{background:var(--text);color:var(--bg);border-color:var(--text)}
+[data-dark] .nf-pill.on{background:var(--accent);color:#000;border-color:var(--accent)}
+.news-card{background:var(--card);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--border)}
+.news-item{padding:12px 0;border-bottom:1px solid var(--border);cursor:pointer}
+.news-item:last-child{border-bottom:none}
+.n-cat{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.12em;margin-bottom:4px}
+.n-title{font-size:13px;font-weight:600;line-height:1.45;color:var(--text)}
+.n-meta{display:flex;align-items:center;gap:8px;margin-top:6px}
+.n-time{font-size:10px;color:var(--text3);font-family:var(--mono)}
+.n-sig{display:inline-flex;align-items:center;gap:4px;background:rgba(240,165,0,.1);border:1px solid rgba(240,165,0,.2);border-radius:99px;padding:2px 8px;font-size:9px;color:var(--accent);font-family:var(--mono);font-weight:700}
+[data-dark] .n-sig{background:rgba(240,192,64,.1);border-color:rgba(240,192,64,.2);color:var(--accent)}
+.sig-pulse{width:5px;height:5px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ============ SIGNALS ============ */
+.signal-section{margin:20px 20px 0}
+.sig-card{background:var(--card);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--border);margin-bottom:10px;cursor:pointer;transition:.2s}
+.sig-card:hover,.sig-card:active{border-color:var(--accent);transform:translateY(-1px)}
+.sig-header{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.sig-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite;flex-shrink:0}
+.sig-title{font-size:14px;font-weight:700;flex:1}
+.sig-body{font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:10px}
+.stock-row{display:flex;gap:6px;flex-wrap:wrap}
+.stock-chip{font-family:var(--mono);font-size:10px;padding:4px 9px;border-radius:99px;background:var(--bg3);border:1px solid var(--border);color:var(--accent2);font-weight:700}
+[data-dark] .stock-chip{background:var(--bg3)}
+
+/* ============ EXPANDABLE ============ */
+.expand-toggle{display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:10px 0}
+.expand-content{display:none;padding-top:8px;border-top:1px solid var(--border)}
+.expand-content.open{display:block;animation:fadeUp .2s}
+.expand-arrow{color:var(--text3);font-size:14px;transition:.2s}
+.expand-arrow.open{transform:rotate(180deg)}
+
+/* ============ PIN ============ */
+.pin-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:24px}
+.pin-dots{display:flex;gap:12px}
+.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--accent);background:transparent;transition:.15s}
+.pin-dot.on{background:var(--accent)}
+.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:240px;width:100%}
+.pk{background:var(--card);border:1.5px solid var(--border);border-radius:16px;padding:18px;font-family:var(--mono);font-size:22px;font-weight:700;text-align:center;cursor:pointer;transition:.15s;box-shadow:var(--shadow)}
+.pk:active{background:var(--accent);color:#000;border-color:var(--accent)}
+
+/* ============ RINGS ============ */
+.rings-wrap{display:flex;gap:16px;overflow-x:auto;padding:4px 0;scrollbar-width:none}
+.rings-wrap::-webkit-scrollbar{display:none}
+.ring-item{display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0}
+.ring-lbl{font-size:10px;color:var(--text2);text-align:center;max-width:60px;line-height:1.3}
+
+/* ============ HABITS ============ */
+.habit-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.hb{background:var(--bg3);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:12px 8px;text-align:center;cursor:pointer;transition:.2s;font-size:11px;font-weight:500;color:var(--text2)}
+.hb.done{background:rgba(0,184,148,.08);border-color:var(--accent2);color:var(--accent2)}
+[data-dark] .hb.done{background:rgba(0,212,170,.08)}
+.hb-icon{font-size:20px;margin-bottom:4px}
+
+/* ============ HEATMAP ============ */
+.heatmap{display:flex;flex-wrap:wrap;gap:3px}
+.hm-c{width:11px;height:11px;border-radius:3px;background:var(--bg3)}
+.hm-c.l1{background:rgba(108,92,231,.2)}.hm-c.l2{background:rgba(108,92,231,.45)}.hm-c.l3{background:rgba(108,92,231,.7)}.hm-c.l4{background:#6c5ce7}
+
+/* ============ CALENDAR ============ */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-dn{text-align:center;font-size:10px;color:var(--text3);font-family:var(--mono);padding:4px 0;font-weight:700}
+.cal-day{text-align:center;padding:7px 2px;border-radius:10px;font-size:12px;cursor:pointer;transition:.15s;min-height:32px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-weight:500}
+.cal-day.today{background:var(--accent4);color:#fff;font-weight:700}
+.sd{width:5px;height:5px;border-radius:50%}
+.sd-frueh{background:#00b894}.sd-spaet{background:#f0a500}.sd-nacht{background:#6c5ce7}.sd-frei{background:#00cec9}.sd-kurs{background:#e17055}
+
+/* ============ AI ============ */
+.ai-flex{display:flex;flex-direction:column;height:100%}
+.ai-msgs{flex:1;overflow-y:auto;padding:16px 16px 0}
+.msg-wrap{display:flex;flex-direction:column;gap:10px;padding-bottom:16px}
+.ai-inp-wrap{padding:12px 16px max(20px,env(safe-area-inset-bottom));background:var(--card);border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0}
+.ai-inp-wrap input{flex:1}
+.msg{max-width:85%;padding:12px 16px;border-radius:18px;font-size:13px;line-height:1.6}
+.msg.u{align-self:flex-end;background:var(--accent4);color:#fff;border-radius:18px 18px 4px 18px;font-weight:500}
+.msg.a{align-self:flex-start;background:var(--card);border:1.5px solid var(--border);border-radius:18px 18px 18px 4px}
+[data-dark] .msg.a{background:var(--bg3)}
+.mn{font-size:9px;color:var(--accent);font-weight:700;letter-spacing:.1em;margin-bottom:4px;font-family:var(--mono);text-transform:uppercase}
+.typing{display:flex;gap:4px;align-items:center;padding:4px 0}
+.typing span{width:6px;height:6px;border-radius:50%;background:var(--text3);animation:bounce .8s infinite}
+.typing span:nth-child(2){animation-delay:.15s}
+.typing span:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
+.send-btn{background:var(--accent4);border:none;border-radius:12px;width:42px;height:42px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.send-btn svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+
+/* ============ SETTINGS ============ */
+.settings-item{display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--border)}
+.settings-item:last-child{border-bottom:none}
+.settings-label{font-size:14px;font-weight:500}
+.settings-sub{font-size:12px;color:var(--text2);margin-top:2px}
+.toggle{width:48px;height:28px;border-radius:99px;background:var(--bg3);border:2px solid var(--border);cursor:pointer;position:relative;transition:.3s;flex-shrink:0}
+.toggle.on{background:var(--accent2);border-color:var(--accent2)}
+.toggle::after{content:'';position:absolute;width:20px;height:20px;border-radius:50%;background:#fff;top:2px;left:2px;transition:.3s;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.toggle.on::after{left:22px}
+.api-key-input{font-family:var(--mono);font-size:12px;letter-spacing:.05em}
+
+/* ============ BREAKING NEWS BANNER ============ */
+.breaking-banner{position:fixed;top:0;left:0;right:0;z-index:400;background:var(--accent3);color:#fff;padding:10px 20px;font-size:12px;font-weight:600;display:none;align-items:center;gap:8px;animation:slideDown .3s ease}
+.breaking-banner.show{display:flex}
+@keyframes slideDown{from{transform:translateY(-100%)}to{transform:none}}
+.breaking-close{background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;margin-left:auto;flex-shrink:0}
+
+/* ============ LANDSCAPE ============ */
+@media(orientation:landscape) and (min-width:768px){
+  .l-layout{display:grid!important;grid-template-columns:260px 1fr;height:100vh}
+  .l-sidebar{background:var(--card);border-right:1px solid var(--border);overflow-y:auto;padding:40px 20px 20px;transition:background .35s}
+  .l-main{overflow-y:auto;padding:40px 28px 40px}
+  .wheel-btn,.wheel-overlay,.wheel-items{display:none!important}
+  .l-nav{display:flex;flex-direction:column;gap:4px;margin-top:20px}
+  .l-nav-btn{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:var(--radius-sm);cursor:pointer;font-size:14px;font-weight:500;color:var(--text2);transition:.15s;border:none;background:none;text-align:left;width:100%}
+  .l-nav-btn:hover{background:var(--bg3);color:var(--text)}
+  .l-nav-btn.active{background:var(--accent4);color:#fff}
+  .l-nav-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+  .l-logo{font-family:var(--mono);font-size:16px;font-weight:700;color:var(--accent4);letter-spacing:.08em}
+  .screen,.screen-mentor{padding-bottom:20px}
+  .page-header{padding-top:0}
+  .home-hero{padding-top:0}
+}
+
+/* ============ ENC BADGE ============ */
+.enc{display:inline-flex;align-items:center;gap:4px;background:rgba(0,184,148,.1);border:1px solid rgba(0,184,148,.2);border-radius:99px;padding:3px 9px;font-size:9px;color:var(--accent2);font-family:var(--mono);font-weight:700}
+.enc-dot{width:5px;height:5px;border-radius:50%;background:var(--accent2);animation:pulse 2s infinite}
+
+/* ============ NETWORTH ============ */
+.nw-card{background:linear-gradient(135deg,var(--accent4),var(--accent5));border-radius:var(--radius);padding:24px;color:#fff;position:relative;overflow:hidden}
+.nw-card::after{content:'₹';position:absolute;right:-10px;bottom:-20px;font-size:120px;opacity:.08;font-family:var(--mono);font-weight:700}
+.nw-eur{font-family:var(--mono);font-size:38px;font-weight:700;line-height:1}
+.nw-inr{font-family:var(--mono);font-size:18px;opacity:.8;margin-top:4px}
+.nw-prog{background:rgba(255,255,255,.2);border-radius:99px;height:6px;overflow:hidden;margin-top:12px}
+.nw-fill{height:100%;border-radius:99px;background:#fff;transition:width .7s}
+
+/* ============ TOPIC ============ */
+.topic-item{background:var(--card);border-radius:var(--radius-sm);padding:14px;margin-bottom:8px;box-shadow:var(--shadow);border:1px solid var(--border)}
+.tchk{width:20px;height:20px;border-radius:6px;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer;flex-shrink:0;transition:.15s}
+.tchk.done{background:var(--accent2);border-color:var(--accent2);color:#000;font-weight:700}
+.sub-row{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:12px;color:var(--text2)}
+.schk{width:15px;height:15px;border-radius:4px;border:1.5px solid var(--border2);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;transition:.15s}
+.schk.done{background:var(--accent2);border-color:var(--accent2);color:#000}
+
+/* ============ LOAN ============ */
+.loan-entry{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--border)}
+.loan-entry:last-child{border-bottom:none}
+</style>
+</head>
+<body>
+<div id="breaking-banner" class="breaking-banner">
+  <span>🔴 BREAKING</span>
+  <span id="breaking-text"></span>
+  <button class="breaking-close" onclick="closeBanner()">×</button>
+</div>
+
+<div id="app">
+<div class="l-layout" style="display:block">
+  <!-- LANDSCAPE SIDEBAR (hidden in portrait) -->
+  <div class="l-sidebar" style="display:none">
+    <div class="l-logo">LEON OS</div>
+    <div class="l-nav">
+      <button class="l-nav-btn active" onclick="switchScreen('home')" id="ln-home"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home</button>
+      <button class="l-nav-btn" onclick="switchScreen('finance')" id="ln-finance"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Finance</button>
+      <button class="l-nav-btn" onclick="switchScreen('goals')" id="ln-goals"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>Goals</button>
+      <button class="l-nav-btn" onclick="switchScreen('fitness')" id="ln-fitness"><svg viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/></svg>Fitness</button>
+      <button class="l-nav-btn" onclick="switchScreen('study')" id="ln-study"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>Study</button>
+      <button class="l-nav-btn" onclick="switchScreen('calendar')" id="ln-calendar"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Calendar</button>
+      <button class="l-nav-btn" onclick="switchScreen('notes')" id="ln-notes"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Notes</button>
+      <button class="l-nav-btn" onclick="switchScreen('mentor')" id="ln-mentor"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>AI Mentor</button>
+      <button class="l-nav-btn" onclick="switchScreen('settings')" id="ln-settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Settings</button>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="l-main" style="display:block;position:relative">
+
+    <!-- HOME -->
+    <div id="s-home" class="screen active">
+      <div class="home-hero">
+        <div class="home-greeting" id="h-greeting">Guten Morgen, <span>Freund 👋</span></div>
+        <div class="home-date" id="h-date"></div>
+      </div>
+      <!-- Daily Germany Alert -->
+      <div class="home-alert" id="h-alert">
+        <div class="alert-label">📍 GERMANY TODAY</div>
+        <div class="alert-text" id="h-alert-text">Loading daily briefing...</div>
+      </div>
+      <!-- Exam + Shift strip -->
+      <div class="exam-strip">
+        <div><div class="exam-days" id="h-exam-days">—</div><div class="exam-label">Tage · Abschlussprüfung Mai 2027</div></div>
+        <div class="shift-badge"><div class="xs muted">DIENST</div><div class="shift-val" id="h-shift">—</div></div>
+      </div>
+      <!-- News -->
+      <div class="news-section">
+        <div class="fb mb12"><div style="font-size:16px;font-weight:700">Live News</div><div class="flex g8"><span id="news-refresh-time" class="xs muted mono"></span><button class="btn-ghost btn-sm" onclick="refreshNews()">↻</button></div></div>
+        <div class="news-filter" id="news-filter">
+          <div class="nf-pill on" onclick="filterNews('all',this)">All</div>
+          <div class="nf-pill" onclick="filterNews('geo',this)">🌍 Geo</div>
+          <div class="nf-pill" onclick="filterNews('markets',this)">📈 Markets</div>
+          <div class="nf-pill" onclick="filterNews('tech',this)">💻 Tech</div>
+          <div class="nf-pill" onclick="filterNews('india',this)">🇮🇳 India</div>
+          <div class="nf-pill" onclick="filterNews('europe',this)">🇪🇺 Europe</div>
+        </div>
+        <div class="news-card" id="news-list"></div>
+      </div>
+      <!-- Trader Signals -->
+      <div class="signal-section">
+        <div style="font-size:16px;font-weight:700;margin-bottom:12px">⚡ Trader Signals</div>
+        <div id="signals-list"></div>
+      </div>
+      <!-- Goals rings -->
+      <div style="margin:20px 20px 0">
+        <div class="fb mb12"><div style="font-size:16px;font-weight:700">Goals</div></div>
+        <div class="card"><div class="rings-wrap" id="h-rings"></div></div>
+      </div>
+      <!-- Habits -->
+      <div style="margin:16px 20px 0">
+        <div class="fb mb12"><div style="font-size:16px;font-weight:700">Habits</div><span id="h-streak" style="font-family:var(--mono);font-weight:700;color:var(--accent)">0 🔥</span></div>
+        <div class="card"><div class="habit-grid" id="h-habits"></div></div>
+      </div>
+      <div style="height:20px"></div>
+    </div>
+
+    <!-- FINANCE -->
+    <div id="s-finance" class="screen">
+      <div class="pin-wrap" id="fin-pin">
+        <div style="text-align:center"><div style="font-size:28px;font-weight:700;margin-bottom:6px">🔐</div><div style="font-size:20px;font-weight:700">Finance</div><div class="sm muted mt4">PIN eingeben</div></div>
+        <div class="pin-dots"><div class="pin-dot" id="pd0"></div><div class="pin-dot" id="pd1"></div><div class="pin-dot" id="pd2"></div><div class="pin-dot" id="pd3"></div></div>
+        <div style="color:var(--accent3);font-size:13px;height:18px;font-weight:500" id="pin-err"></div>
+        <div class="pin-pad"><div class="pk" onclick="pp('1')">1</div><div class="pk" onclick="pp('2')">2</div><div class="pk" onclick="pp('3')">3</div><div class="pk" onclick="pp('4')">4</div><div class="pk" onclick="pp('5')">5</div><div class="pk" onclick="pp('6')">6</div><div class="pk" onclick="pp('7')">7</div><div class="pk" onclick="pp('8')">8</div><div class="pk" onclick="pp('9')">9</div><div class="pk" onclick="pp('c')" style="font-size:12px;color:var(--text2)">CLR</div><div class="pk" onclick="pp('0')">0</div><div class="pk" onclick="pp('d')" style="font-size:18px">⌫</div></div>
+      </div>
+      <div id="fin-content" style="display:none">
+        <div class="page-header"><div><div class="page-title">Finance</div><div class="page-sub">Encrypted · Private</div></div><div class="flex g8"><div class="enc"><div class="enc-dot"></div>ENC</div><button class="btn-ghost btn-sm" onclick="lockFin()">🔒 Lock</button></div></div>
+        <div style="padding:0 20px">
+          <!-- Salary -->
+          <div class="card card-gold mb12">
+            <div class="fb mb4"><div class="lbl" style="margin:0;color:rgba(0,0,0,0.5)">Gehalt / Monat</div><button onclick="openModal('salary-modal')" style="background:rgba(0,0,0,.1);border:none;border-radius:99px;padding:5px 12px;font-size:11px;font-weight:600;cursor:pointer">✏️ Edit</button></div>
+            <div style="font-family:var(--mono);font-size:36px;font-weight:700;line-height:1" id="fin-salary">€1,110</div>
+            <div style="font-size:12px;opacity:.7;margin-top:4px" id="fin-extra">+ €0 extra income</div>
+          </div>
+          <!-- Overview -->
+          <div class="grid2 mb12">
+            <div class="card" style="margin:0"><div class="lbl">Ausgegeben</div><div style="font-family:var(--mono);font-size:26px;font-weight:700;color:var(--accent3)" id="fin-spent">€0</div></div>
+            <div class="card" style="margin:0"><div class="lbl">Übrig</div><div style="font-family:var(--mono);font-size:26px;font-weight:700;color:var(--accent2)" id="fin-left">€0</div></div>
+          </div>
+          <!-- Budget bar -->
+          <div class="card mb12">
+            <div class="fb mb6"><span class="sm font-weight:500">Budget</span><span style="font-family:var(--mono);font-weight:700;color:var(--accent3)" id="fin-bpct">0%</span></div>
+            <div class="prog"><div class="pf pf-r" id="fin-bbar" style="width:0%"></div></div>
+            <div class="fb mt8"><span class="xs muted">Fixkosten ~€623 + €150 Loan</span><span class="xs muted">Übrig: <span id="fin-actual" style="color:var(--accent3);font-weight:600">~€287</span></span></div>
+          </div>
+          <!-- Gap warning - expandable -->
+          <div class="card mb12" style="border-color:rgba(232,64,87,.2);background:rgba(232,64,87,.04)">
+            <div class="expand-toggle" onclick="toggleExpand('gap-content','gap-arrow')">
+              <div><div style="font-size:13px;font-weight:700;color:var(--accent3)">⚠ €8K Goal Gap</div><div class="xs muted mt4">Tap to see details</div></div>
+              <div class="expand-arrow" id="gap-arrow">▾</div>
+            </div>
+            <div class="expand-content" id="gap-content">
+              <div class="sm muted" style="line-height:1.6">Need €800/month · Have ~€287 · <strong style="color:var(--accent3)">Gap: ~€513</strong><br>Sep 2025: Loan stops → Gap drops to ~€350<br>May 2027: Graduation → Salary jumps to €2,400+</div>
+            </div>
+          </div>
+          <!-- 8k goal -->
+          <div class="card mb12">
+            <div class="fb mb4"><div style="font-size:15px;font-weight:700">€8k Sparziel</div><span class="tag ty" id="fin-8kpct">0%</span></div>
+            <div style="font-family:var(--mono);font-size:30px;font-weight:700;color:var(--accent)" id="fin-saved">€0</div>
+            <div class="xs muted mt4">von €8,000 · Ziel März 2026</div>
+            <div class="prog mt8"><div class="pf" id="fin-8kbar" style="width:0%"></div></div>
+          </div>
+          <!-- Net Worth -->
+          <div class="nw-card mb12">
+            <div class="lbl" style="color:rgba(255,255,255,.6);margin-bottom:8px">NET WORTH</div>
+            <div class="nw-eur" id="fin-nw-eur">€0</div>
+            <div class="nw-inr" id="fin-nw-inr">₹0</div>
+            <div class="nw-prog mt12"><div class="nw-fill" id="fin-nw-bar" style="width:0%"></div></div>
+            <div style="font-size:11px;opacity:.7;margin-top:6px" id="fin-nw-pct">0% of ₹3 Crore target (2035)</div>
+          </div>
+          <!-- Buckets - expandable -->
+          <div class="card mb12">
+            <div class="expand-toggle" onclick="toggleExpand('buckets-content','buckets-arrow')">
+              <div style="font-size:15px;font-weight:700">Sparbereiche</div>
+              <div class="flex g8"><button onclick="event.stopPropagation();openBucketModal()" class="btn-ghost btn-sm">Edit</button><div class="expand-arrow" id="buckets-arrow">▾</div></div>
+            </div>
+            <div class="expand-content open" id="buckets-content">
+              <div class="mt8"><canvas id="fin-donut" style="max-height:130px"></canvas></div>
+              <div id="fin-buckets" class="mt8"></div>
+            </div>
+          </div>
+          <!-- Projection -->
+          <div class="card mb12">
+            <div class="expand-toggle" onclick="toggleExpand('proj-content','proj-arrow')">
+              <div style="font-size:15px;font-weight:700">Finanz-Projektion 2035</div>
+              <div class="expand-arrow" id="proj-arrow">▾</div>
+            </div>
+            <div class="expand-content open" id="proj-content">
+              <canvas id="fin-proj" style="height:180px;margin-top:12px"></canvas>
+              <div class="mt8">
+                <div class="flex g8 mt4 xs muted"><div style="width:8px;height:8px;border-radius:50%;background:#e84057;flex-shrink:0"></div>Pessimistisch</div>
+                <div class="flex g8 mt4 xs muted"><div style="width:8px;height:8px;border-radius:50%;background:#f0a500;flex-shrink:0"></div>Realistisch</div>
+                <div class="flex g8 mt4 xs muted"><div style="width:8px;height:8px;border-radius:50%;background:#00b894;flex-shrink:0"></div>Optimistisch</div>
+                <div class="flex g8 mt4 xs muted"><div style="width:8px;height:8px;border-radius:50%;background:#6c5ce7;flex-shrink:0"></div>Aktuell</div>
+              </div>
+            </div>
+          </div>
+          <!-- Expenses -->
+          <div class="fb mb12"><div style="font-size:15px;font-weight:700">Ausgaben</div><button class="btn btn-sm" onclick="openExpModal()">+ Add</button></div>
+          <div class="sx mb8">
+            <div class="nf-pill on" onclick="filterExp('all',this)">Alle</div>
+            <div class="nf-pill" onclick="filterExp('food',this)">🍽 Essen</div>
+            <div class="nf-pill" onclick="filterExp('transport',this)">🚊 Transport</div>
+            <div class="nf-pill" onclick="filterExp('rent',this)">🏠 Miete</div>
+            <div class="nf-pill" onclick="filterExp('utilities',this)">💡 Nebenkosten</div>
+            <div class="nf-pill" onclick="filterExp('gym',this)">💪 Gym</div>
+            <div class="nf-pill" onclick="filterExp('other',this)">📦 Sonstiges</div>
+          </div>
+          <div class="card mb12" id="fin-expenses"></div>
+          <!-- Loan -->
+          <div class="fb mb12"><div style="font-size:15px;font-weight:700">Kredit Tracker</div><button class="btn btn-sm" onclick="openModal('loan-modal')">+ Zahlung</button></div>
+          <div class="card mb12">
+            <div class="grid2 mb8">
+              <div><div class="xs muted">Verbleibend</div><div style="font-family:var(--mono);font-size:20px;font-weight:700;color:var(--accent3)" id="fin-loan-rem">₹3,00,000</div></div>
+              <div style="text-align:right"><div class="xs muted">Bezahlt</div><div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--accent2)" id="fin-loan-paid">₹3,00,000</div></div>
+            </div>
+            <div class="prog"><div class="pf pf-t" id="fin-loan-bar" style="width:50%"></div></div>
+            <div id="fin-loan-list" class="mt8"></div>
+          </div>
+          <!-- Watchlist -->
+          <div class="fb mb12"><div style="font-size:15px;font-weight:700">📈 Watchlist</div><button class="btn btn-sm" onclick="openModal('watch-modal')">+ Add</button></div>
+          <div class="card mb12" id="fin-watchlist"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GOALS -->
+    <div id="s-goals" class="screen">
+      <div class="page-header"><div><div class="page-title">Goals</div></div><button class="btn btn-sm" onclick="openModal('goal-modal')">+ Add</button></div>
+      <div style="padding:0 20px">
+        <div class="card mb16"><div class="rings-wrap" id="goals-rings"></div></div>
+        <div id="goals-list"></div>
+      </div>
+    </div>
+
+    <!-- FITNESS -->
+    <div id="s-fitness" class="screen">
+      <div class="page-header"><div class="page-title">Fitness 💪</div></div>
+      <div style="padding:0 20px">
+        <div class="grid2 mb12">
+          <div class="card card-accent" style="margin:0;text-align:center;padding:20px"><div style="font-family:var(--mono);font-size:46px;font-weight:700;line-height:1" id="fit-sep">—</div><div style="font-size:11px;opacity:.8;margin-top:4px">Tage bis September</div></div>
+          <div class="card" style="margin:0;text-align:center;padding:20px"><div style="font-family:var(--mono);font-size:46px;font-weight:700;color:var(--accent2);line-height:1" id="fit-streak">0</div><div class="xs muted mt4">Streak 🔥</div></div>
+        </div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:10px">Habits</div>
+        <div class="card mb12"><div class="habit-grid" id="fit-habits"></div></div>
+        <div class="fb mb10"><div style="font-size:15px;font-weight:700">Workouts</div><button class="btn btn-sm" onclick="openModal('wo-modal')">+ Log</button></div>
+        <div class="card mb12" id="fit-wo-list"><div class="sm muted">Noch keine Workouts.</div></div>
+        <div class="fb mb10"><div style="font-size:15px;font-weight:700">Gewicht</div><button class="btn-teal btn btn-sm" onclick="openModal('wt-modal')">+ Log</button></div>
+        <div class="card mb12" id="fit-wt-list"><div class="sm muted">Noch keine Einträge.</div></div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:10px">Gewicht Trend</div>
+        <div class="card mb12"><canvas id="fit-wt-chart" style="height:120px"></canvas></div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:10px">Activity Heatmap</div>
+        <div class="card"><div class="heatmap" id="fit-heatmap"></div><div class="xs muted mt8">Letzte 84 Tage</div></div>
+      </div>
+    </div>
+
+    <!-- STUDY -->
+    <div id="s-study" class="screen">
+      <div class="page-header"><div class="page-title">Study 📚</div><button class="btn btn-sm" onclick="openModal('topic-modal')">+ Thema</button></div>
+      <div style="padding:0 20px">
+        <div class="card card-accent mb12" style="text-align:center;padding:24px">
+          <div style="font-family:var(--mono);font-size:52px;font-weight:700;line-height:1" id="study-days">—</div>
+          <div style="font-size:12px;opacity:.8;margin-top:6px">Tage · Abschlussprüfung Mai 2027</div>
+          <div class="divider" style="border-color:rgba(255,255,255,.2);margin:12px 0"></div>
+          <div class="fb"><span style="font-size:12px;opacity:.7">Wochenziel</span><span style="font-family:var(--mono);font-size:12px;font-weight:700" id="study-weekly">Nicht gesetzt</span></div>
+          <button onclick="openModal('weekly-modal')" style="background:rgba(255,255,255,.2);border:none;border-radius:99px;padding:6px 16px;color:#fff;font-size:11px;font-weight:600;cursor:pointer;margin-top:10px">Ziel setzen</button>
+        </div>
+        <div class="flex g6 mb12">
+          <div class="nf-pill on" onclick="switchStudy('topics',this)" id="study-tab-topics">Themen</div>
+          <div class="nf-pill" onclick="switchStudy('exam',this)" id="study-tab-exam">Prüfungsvorbereitung</div>
+        </div>
+        <div id="study-topics-panel">
+          <div id="study-topics-list"></div>
+        </div>
+        <div id="study-exam-panel" style="display:none">
+          <div class="fb mb10"><div style="font-size:15px;font-weight:700">F&A Bank</div><button class="btn btn-sm" onclick="openModal('qa-modal')">+ F&A</button></div>
+          <button class="btn-purple btn btn-sm mb12" onclick="startQuiz()">🧠 Quiz starten</button>
+          <div id="study-qa-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CALENDAR -->
+    <div id="s-calendar" class="screen">
+      <div class="page-header"><div class="page-title">Kalender</div><button class="btn btn-sm" onclick="openModal('rem-modal')">+ Reminder</button></div>
+      <div style="padding:0 20px">
+        <div class="card mb12">
+          <div class="fb mb12"><button class="btn-ghost btn-sm" onclick="calNav(-1)">‹</button><span style="font-family:var(--mono);font-weight:700;font-size:14px" id="cal-lbl"></span><button class="btn-ghost btn-sm" onclick="calNav(1)">›</button></div>
+          <div class="cal-grid" id="cal-grid"></div>
+          <div class="flex g12 mt10" style="flex-wrap:wrap">
+            <div class="flex g4 xs muted"><div class="sd sd-frueh" style="display:inline-block;width:7px;height:7px;border-radius:50%"></div>Früh</div>
+            <div class="flex g4 xs muted"><div class="sd sd-spaet" style="display:inline-block;width:7px;height:7px;border-radius:50%"></div>Spät</div>
+            <div class="flex g4 xs muted"><div class="sd sd-nacht" style="display:inline-block;width:7px;height:7px;border-radius:50%"></div>Nacht</div>
+            <div class="flex g4 xs muted"><div class="sd sd-frei" style="display:inline-block;width:7px;height:7px;border-radius:50%"></div>Frei</div>
+            <div class="flex g4 xs muted"><div class="sd sd-kurs" style="display:inline-block;width:7px;height:7px;border-radius:50%"></div>Kurs</div>
+          </div>
+        </div>
+        <div class="grid2 mb12">
+          <div class="card" style="margin:0;text-align:center"><div class="big" style="font-size:28px" id="cal-free">—</div><div class="xs muted">Freie Tage</div></div>
+          <div class="card" style="margin:0;text-align:center"><div class="big" style="font-size:28px;color:var(--accent2)" id="cal-work">—</div><div class="xs muted">Arbeitstage</div></div>
+        </div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:10px">Dienst eintragen</div>
+        <div class="card mb12">
+          <div class="mrow"><input type="date" id="cal-shift-date"><select id="cal-shift-type"><option value="frueh">Früh</option><option value="spaet">Spät</option><option value="nacht">Nacht</option><option value="frei">Frei</option><option value="kurs">Kurs</option></select></div>
+          <button class="btn w-full" onclick="addShift()">Eintragen</button>
+        </div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:10px">Erinnerungen</div>
+        <div class="card" id="cal-reminders"><div class="sm muted">Keine Erinnerungen.</div></div>
+      </div>
+    </div>
+
+    <!-- NOTES -->
+    <div id="s-notes" class="screen">
+      <div class="page-header"><div class="page-title">Notizen</div><button class="btn btn-sm" onclick="openModal('note-modal')">+ Neu</button></div>
+      <div style="padding:0 20px">
+        <div class="sx mb12">
+          <div class="nf-pill on" onclick="switchNote('quick',this)">Schnell</div>
+          <div class="nf-pill" onclick="switchNote('nursing',this)">Pflege</div>
+          <div class="nf-pill" onclick="switchNote('goals',this)">Ziele</div>
+          <div class="nf-pill" onclick="switchNote('finance',this)">Finanzen</div>
+        </div>
+        <div id="notes-list"></div>
+      </div>
+    </div>
+
+    <!-- MENTOR -->
+    <div id="s-mentor" class="screen-mentor">
+      <div style="padding:56px 20px 12px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--card)">
+        <div style="font-size:24px;font-weight:700">Mentor 🤖</div>
+        <div class="xs muted mono">Denglish · Direkt · Kein Sugarcoating</div>
+      </div>
+      <div class="ai-msgs" id="ai-msgs"><div class="msg-wrap" id="ai-msg-wrap"></div></div>
+      <div class="ai-inp-wrap">
+        <input type="text" id="ai-inp" placeholder="Frag mich was..." onkeydown="if(event.key==='Enter')sendAI()">
+        <button class="send-btn" onclick="sendAI()"><svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="s-settings" class="screen">
+      <div class="page-header"><div class="page-title">Settings</div></div>
+      <div style="padding:0 20px">
+        <div class="card mb12">
+          <div class="settings-item">
+            <div><div class="settings-label">Dark Mode</div><div class="settings-sub">Toggle dark/light theme</div></div>
+            <div class="toggle" id="dark-toggle" onclick="toggleDark()"></div>
+          </div>
+          <div class="settings-item">
+            <div><div class="settings-label">Notifications</div><div class="settings-sub">10am + 10pm daily reminders</div></div>
+            <div class="toggle on" id="notif-toggle" onclick="toggleNotif()"></div>
+          </div>
+        </div>
+        <!-- API Key -->
+        <div class="card mb12">
+          <div style="font-size:15px;font-weight:700;margin-bottom:4px">🔑 Anthropic API Key</div>
+          <div class="xs muted mb12">Your key is stored encrypted on this device only. Never sent anywhere.</div>
+          <input type="password" id="api-key-input" class="api-key-input mb8" placeholder="sk-ant-api03-...">
+          <button class="btn w-full" onclick="saveAPIKey()">Save Key</button>
+          <div style="font-size:12px;color:var(--accent2);margin-top:8px;display:none" id="api-key-status">✓ Key saved</div>
+        </div>
+        <!-- Encryption -->
+        <div class="card mb12">
+          <div style="font-size:15px;font-weight:700;margin-bottom:4px">🔐 Data Encryption</div>
+          <div class="xs muted">All your data is encrypted with your personal key before saving. GitHub sees only scrambled data.</div>
+          <div class="flex g8 mt8"><div class="enc"><div class="enc-dot"></div>ENCRYPTED</div><span class="xs muted">AES-XOR · Local only</span></div>
+        </div>
+        <!-- About -->
+        <div class="card">
+          <div style="font-size:15px;font-weight:700;margin-bottom:8px">LEON OS v4</div>
+          <div class="xs muted" style="line-height:1.6">Built for you. Personal AI dashboard — nursing, finance, trading, goals. Hosted on GitHub Pages. Data stays on your devices.</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end l-main -->
+</div><!-- end l-layout -->
+</div><!-- end app -->
+
+<!-- WHEEL NAV -->
+<div class="wheel-overlay" id="wheel-overlay" onclick="closeWheel()"></div>
+<div class="wheel-items" id="wheel-items">
+  <div class="wheel-item wi-home" id="wi-home"><div class="wheel-label">Home</div><button class="wheel-item-btn" style="background:var(--accent4)" onclick="wheelNav('home')">🏠</button></div>
+  <div class="wheel-item wi-finance" id="wi-finance"><div class="wheel-label">Finance</div><button class="wheel-item-btn" style="background:var(--accent2)" onclick="wheelNav('finance')">💶</button></div>
+  <div class="wheel-item wi-calendar" id="wi-calendar"><div class="wheel-label">Calendar</div><button class="wheel-item-btn" style="background:var(--accent5)" onclick="wheelNav('calendar')">📅</button></div>
+  <div class="wheel-item wi-fitness" id="wi-fitness"><div class="wheel-label">Fitness</div><button class="wheel-item-btn" style="background:var(--accent3)" onclick="wheelNav('fitness')">💪</button></div>
+  <div class="wheel-item wi-study" id="wi-study"><div class="wheel-label">Study</div><button class="wheel-item-btn" style="background:#6c5ce7;width:42px;height:42px" onclick="wheelNav('study')">📚</button></div>
+  <div class="wheel-item wi-goals" id="wi-goals"><div class="wheel-label">Goals</div><button class="wheel-item-btn" style="background:#e17055;width:42px;height:42px" onclick="wheelNav('goals')">🎯</button></div>
+  <div class="wheel-item wi-notes" id="wi-notes"><div class="wheel-label">Notes</div><button class="wheel-item-btn" style="background:#00cec9;width:42px;height:42px" onclick="wheelNav('notes')">📝</button></div>
+  <div class="wheel-item wi-mentor" id="wi-mentor"><div class="wheel-label">Mentor</div><button class="wheel-item-btn" style="background:#fdcb6e;width:42px;height:42px" onclick="wheelNav('mentor')">🤖</button></div>
+  <div class="wheel-item wi-settings" id="wi-settings"><div class="wheel-label">Settings</div><button class="wheel-item-btn" style="background:#636e72;width:42px;height:42px" onclick="wheelNav('settings')">⚙️</button></div>
+</div>
+<button class="wheel-btn" id="wheel-btn" onclick="toggleWheel()">
+  <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+</button>
+
+<!-- MODALS -->
+<div class="overlay" id="salary-modal"><div class="modal"><div class="modal-handle"></div><div class="fb mb16"><h3>Gehalt bearbeiten</h3><button class="cbtn" onclick="closeModal('salary-modal')">×</button></div><input type="number" id="m-sal" placeholder="Grundgehalt €" class="mb8"><input type="number" id="m-extra" placeholder="Zusatzeinkommen €" class="mb16"><button class="btn w-full" onclick="saveSalary()">Speichern & Neu berechnen</button></div></div>
+<div class="overlay" id="expense-modal"><div class="modal"><div class="modal-handle"></div><div class="fb mb12"><h3 id="exp-ttl">Ausgabe</h3><button class="cbtn" onclick="closeModal('expense-modal')">×</button></div><input type="text" id="em-name" placeholder="Beschreibung" class="mb8"><div class="mrow"><input type="number" id="em-amt" placeholder="€" step="0.01"><select id="em-cat"><option value="food">🍽 Essen</option><option value="transport">🚊 Transport</option><option value="rent">🏠 Miete</option><option value="utilities">💡 Nebenkosten</option><option value="gym">💪 Gym</option><option value="other">📦 Sonstiges</option></select></div><input type="date" id="em-date" class="mb16"><button class="btn w-full" onclick="saveExp()">Speichern</button></div></div>
+<div class="overlay" id="bucket-modal"><div class="modal"><div class="modal-handle"></div><div class="fb mb12"><h3>Sparbereiche</h3><button class="cbtn" onclick="closeModal('bucket-modal')">×</button></div><div id="bucket-edit"></div><button class="btn w-full mt8" onclick="saveBuckets()">Speichern</button></div></div>
+<div class="overlay" id="loan-modal"><div class="modal"><div class="modal-handle"></div><div class="fb mb12"><h3>Kreditzahlung</h3><button class="cbtn" onclick="closeModal('loan-modal')">×</button></div><input type="number" id="lm-amt" placeholder="Betrag €" step="0.01" class="mb8"><input type="date" id="lm-date" class="mb8"><textarea id="lm-note" rows="2" placeholder="Notiz..." class="mb16"></textarea><button class="btn w-full" onclick="saveLoan()">Hinzufügen</button></div></div>
+<div class="overlay" id="watch-modal"><div class="modal"><div class="modal-handle"></div><div class="fb mb12"><h3>Watchlist</h3><button class="cbtn" onclick="closeModal('watch-modal')">×</button></div><input type="text" id="wm-ticker" placeholder="Ticker (z.B. ASML)" class="mb8"><input type="text" id="wm-name" placeholder="Name" class="mb8"><select id="wm-exchange" class="mb8"><option value="Euronext">Euronext</option><option value="XETRA">XETRA</option><option value="NSE">NSE India</option><option value="BSE">BSE India</option><option value="NASDAQ">NASDAQ</option><option value="NYSE">NYSE</option></select><input type="number" id="wm-target" placeholder="Kursziel (optional)" step="0.01" class="mb16"><button class="btn w-full" onclick="saveWatch()">Hinzufügen</button></div></div>
+<div class="overlay" id="goal-modal"><div class="modal"><div class="modal-handle"></div><div class="fb mb12"><h3>Ziel</h3><button class="cbtn" onclick="closeModal('goal-modal')">×</button></div><input type="text" id="gm-title" placeholder="Titel" class="mb8"><input type="text" id="gm-emoji" placeholder="Emoji" class="mb8"><input type="date" id="gm-deadline" class="mb8"><input type="text" id="gm-next" placeholder="Nächster Schritt" class="mb8"><div class="mrow"><input type="number" id="gm-cur" placeholder="Aktuell"><input type="number" id="gm-tgt" placeholder="Ziel"></div><button class="btn w-full mt8" onclick="saveGoal()">Hinzufügen</button></div></div>
+<div class="overlay" id="wo-modal"><div class="modal"><div class="modal-handle"></div><div class="fb mb12"><h3>Workout</h3><button class="cbtn" onclick="closeModal('wo-modal')">×</button></div><input type="text" id="wom-type" placeholder="Art (Gym, Laufen...)" class="mb8"><input type="number" id="wom-dur" placeholder="Dauer (Min)" class="mb8"><textarea id="wom-notes" rows="2" placeholder="Notizen" class="mb8"></textarea><input type="date" id="wom-date" class="mb16"><button class="btn w-full" onclick="saveWorkout()">Eintragen</button></div></div>
+<div class="overlay" id="wt-modal"><div class="modal"><div class="modal-handle"></div><div class="fb mb12"><h3>Gewicht</h3><button class="cbtn" onclick="closeModal('wt-modal')">×</button></div><input type="number" id="wtm-val" placeholder="kg" step="0.1" class="mb8"><input type="date" id="wtm-date" class="mb16"><button class="btn w-full" onclick="saveWeight()">Speichern</button></div></div>
+<div class="overlay" id="topic-modal"><div class="modal"><div class="modal-handle"></div><div class="fb mb12"><h3>Thema</h3><button class="cbtn" onclick="closeModal('topic-modal')">×</button></div><input type="text" id="tm-name" placeholder="Thema" class="mb8"><textarea id="tm-notes" rows="3" placeholder="Notizen..." class="mb8"></textarea><input type="text" id="tm-subs" placeholder="Unterthemen (kommagetrennt)" class="mb16"><button class="btn w-full" onclick="saveTopic()">Hinzufügen</button></div></div>
+<div class="overlay" id="qa-modal"><div class="modal"><div class="modal-handle"></div><div class="fb mb12"><h3>Frage & Antwort</h3><button class="cbtn" onclick="closeModal('qa-modal')">×</button></div><textarea id="qam-q" rows="3" placeholder="Frage..." class="mb8"></textarea><textarea id="qam-a" rows="4" placeholder="Antwort..." class="mb16"></textarea><button class="btn w-full" onclick="saveQA()">Hinzufügen</button></div></div>
+<div class="overlay" id="weekly-modal"><div class="modal"><div class="modal-handle"></div><div class="fb mb12"><h3>Wochenziel</h3><button class="cbtn" onclick="closeModal('weekly-modal')">×</button></div><input type="text" id="wkm-inp" placeholder="z.B. 3 Themen/Woche" class="mb16"><button class="btn w-full" onclick="saveWeekly()">Speichern</button></div></div>
+<div class="overlay" id="rem-modal"><div class="modal"><div class="modal-handle"></div><div class="fb mb12"><h3>Erinnerung</h3><button class="cbtn" onclick="closeModal('rem-modal')">×</button></div><input type="text" id="rem-title" placeholder="Titel" class="mb8"><input type="date" id="rem-date" class="mb8"><input type="text" id="rem-emoji" placeholder="Emoji" class="mb16"><button class="btn w-full" onclick="saveReminder()">Hinzufügen</button></div></div>
+<div class="overlay" id="note-modal"><div class="modal"><div class="modal-handle"></div><div class="fb mb12"><h3>Neue Notiz</h3><button class="cbtn" onclick="closeModal('note-modal')">×</button></div><input type="text" id="nm-title" placeholder="Titel" class="mb8"><select id="nm-cat" class="mb8"><option value="quick">Schnell</option><option value="nursing">Pflege</option><option value="goals">Ziele</option><option value="finance">Finanzen</option></select><textarea id="nm-body" rows="6" placeholder="Notiz..." class="mb16"></textarea><button class="btn w-full" onclick="saveNote()">Speichern</button></div></div>
+<div class="overlay" id="quiz-modal"><div class="modal" style="text-align:center"><div class="modal-handle"></div><div class="fb mb12"><h3>🧠 Quiz</h3><button class="cbtn" onclick="closeModal('quiz-modal')">×</button></div><div class="xs muted mono mb8" id="quiz-prog"></div><div id="quiz-q" style="font-size:15px;font-weight:600;text-align:left;line-height:1.5;margin-bottom:16px"></div><button class="btn-ghost w-full mb8" onclick="revealAns()">Antwort zeigen</button><div id="quiz-a" style="display:none;text-align:left;font-size:13px;color:var(--text2);line-height:1.6;padding:14px;background:var(--bg3);border-radius:var(--radius-sm);margin-bottom:14px"></div><div id="quiz-btns" style="display:none;gap:10px;justify-content:center" class="flex"><button class="btn btn-red" onclick="qNext(false)">❌ Falsch</button><button class="btn btn-teal" onclick="qNext(true)">✅ Richtig</button></div><div id="quiz-result" style="display:none;font-family:var(--mono);font-size:18px;font-weight:700"></div></div></div>
+<div class="overlay" id="signal-modal"><div class="modal"><div class="modal-handle"></div><div class="fb mb12"><h3 id="sig-ttl">Signal</h3><button class="cbtn" onclick="closeModal('signal-modal')">×</button></div><div id="sig-body" style="font-size:13px;line-height:1.7;color:var(--text2)"></div><div class="mt12"><div class="lbl">Betroffene Aktien</div><div id="sig-stocks" class="stock-row"></div></div><button class="btn w-full mt16" onclick="deepAnalysis()">🤖 AI Deep Analysis</button></div></div>
+
+<script>
+// ============================================================
+// ENCRYPTION
+// ============================================================
+const EK='Annamalai';
+function enc(d){const s=JSON.stringify(d);let r='';for(let i=0;i<s.length;i++)r+=String.fromCharCode(s.charCodeAt(i)^EK.charCodeAt(i%EK.length));return btoa(r);}
+function dec(e){try{const s=atob(e);let r='';for(let i=0;i<s.length;i++)r+=String.fromCharCode(s.charCodeAt(i)^EK.charCodeAt(i%EK.length));return JSON.parse(r);}catch(e){return null;}}
+
+// ============================================================
+// STATE
+// ============================================================
+const SK='leon_v5';
+let S={
+  salary:1110,extraIncome:0,apiKey:'',
+  dark:false,notifs:true,
+  expenses:[],buckets:[
+    {id:'loan',name:'Kredit',emoji:'💳',amount:0,target:2000},
+    {id:'apt',name:'Wohnung',emoji:'🏠',amount:0,target:3000},
+    {id:'emer',name:'Notfall',emoji:'🛡️',amount:0,target:1000},
+    {id:'dream',name:'Traum',emoji:'✨',amount:0,target:500},
+    {id:'learn',name:'Lernen',emoji:'📚',amount:0,target:300},
+  ],
+  loanPayments:[],loanTotal:600000,loanPaid:300000,
+  watchlist:[
+    {id:1,ticker:'ASML',name:'ASML Holding',exchange:'Euronext',target:850},
+    {id:2,ticker:'TSM',name:'Taiwan Semi',exchange:'NYSE',target:200},
+    {id:3,ticker:'MU',name:'Micron Tech',exchange:'NASDAQ',target:130},
+    {id:4,ticker:'RHM',name:'Rheinmetall AG',exchange:'XETRA',target:700},
+    {id:5,ticker:'NTPC',name:'NTPC Ltd',exchange:'NSE',target:380},
+  ],
+  goals:[
+    {id:1,emoji:'💶',title:'€8k sparen',deadline:'2026-03-01',next:'€287 diesen Monat',current:1600,target:8000},
+    {id:2,emoji:'💪',title:'Fit bis Sep',deadline:'2025-09-01',next:'Gym diese Woche',current:0,target:100},
+    {id:3,emoji:'🎓',title:'Abschlussprüfung',deadline:'2027-05-01',next:'3x lernen diese Woche',current:0,target:100},
+    {id:4,emoji:'🏥',title:'Wundexperte',deadline:'2028-01-01',next:'Kurse recherchieren',current:0,target:100},
+    {id:5,emoji:'🏠',title:'Bessere Wohnung',deadline:'2027-06-01',next:'Fonds aufbauen',current:0,target:100},
+  ],
+  shifts:{},reminders:[],workouts:[],weights:[],
+  topics:[
+    {id:1,name:'Diabetes Mellitus Typ II',notes:'Insulinresistenz',done:false,subtopics:[{name:'Symptome',done:false},{name:'Therapie',done:false},{name:'Komplikationen',done:false},{name:'Diabetischer Fuß',done:false}]},
+    {id:2,name:'Dekubitus',notes:'Grad I–IV',done:false,subtopics:[{name:'Gradeinteilung',done:false},{name:'Prävention',done:false},{name:'Behandlung',done:false}]},
+    {id:3,name:'COPD',notes:'Chronisch obstruktiv',done:false,subtopics:[{name:'Symptome',done:false},{name:'Therapie',done:false},{name:'Pflege',done:false}]},
+    {id:4,name:'Herzinsuffizienz',notes:'NYHA I–IV',done:false,subtopics:[{name:'NYHA',done:false},{name:'Medikamente',done:false},{name:'Pflege',done:false}]},
+    {id:5,name:'Thrombose & Varikosis',notes:'',done:false,subtopics:[{name:'Risikofaktoren',done:false},{name:'Prophylaxe',done:false},{name:'Behandlung',done:false}]},
+    {id:6,name:'Pneumonie',notes:'',done:false,subtopics:[{name:'Erreger',done:false},{name:'Symptome',done:false},{name:'Pflege',done:false}]},
+    {id:7,name:'Retinopathie',notes:'Diabetisch',done:false,subtopics:[{name:'Ursachen',done:false},{name:'Stadien',done:false},{name:'Prävention',done:false}]},
+    {id:8,name:'Intertrigo',notes:'Hautfaltenekzem',done:false,subtopics:[{name:'Prävention',done:false},{name:'Behandlung',done:false}]},
+    {id:9,name:'Venöse & Arterielle Ulcera',notes:'',done:false,subtopics:[{name:'Venöses Ulkus',done:false},{name:'Arterielles Ulkus',done:false},{name:'Therapie',done:false}]},
+  ],
+  qaList:[],notes:[],
+  habits:[
+    {id:'workout',label:'Workout',icon:'💪',done:false},
+    {id:'water',label:'2L Wasser',icon:'💧',done:false},
+    {id:'sleep',label:'7h Schlaf',icon:'😴',done:false},
+    {id:'steps',label:'Spazieren',icon:'🚶',done:false},
+    {id:'stretch',label:'Dehnen',icon:'🧘',done:false},
+    {id:'nojunk',label:'Kein Junk',icon:'🥗',done:false},
+  ],
+  streak:0,lastHabit:null,studyDays:{},weeklyTarget:'',noteTab:'quick',
+};
+
+function loadS(){try{const r=localStorage.getItem(SK);if(r){const d=dec(r);if(d)S={...S,...d};}}catch(e){}}
+function saveS(){try{localStorage.setItem(SK,enc(S));}catch(e){}}
+
+// ============================================================
+// THEME
+// ============================================================
+function applyTheme(){
+  if(S.dark){document.documentElement.setAttribute('data-dark','');}
+  else{document.documentElement.removeAttribute('data-dark');}
+  const tog=document.getElementById('dark-toggle');
+  if(tog)tog.classList.toggle('on',S.dark);
+}
+
+function toggleDark(){S.dark=!S.dark;saveS();applyTheme();}
+
+// Auto theme by time
+function autoTheme(){
+  const h=new Date().getHours();
+  S.dark=(h<6||h>=20);
+  applyTheme();
+}
+
+// ============================================================
+// WHEEL NAV
+// ============================================================
+let wheelOpen=false;
+
+function toggleWheel(){
+  wheelOpen=!wheelOpen;
+  const btn=document.getElementById('wheel-btn');
+  const overlay=document.getElementById('wheel-overlay');
+  const items=document.querySelectorAll('.wheel-item');
+  btn.classList.toggle('open',wheelOpen);
+  overlay.classList.toggle('open',wheelOpen);
+  items.forEach((item,i)=>{
+    setTimeout(()=>item.classList.toggle('open',wheelOpen),wheelOpen?i*40:0);
+  });
+}
+
+function closeWheel(){if(wheelOpen)toggleWheel();}
+
+function wheelNav(screen){
+  closeWheel();
+  setTimeout(()=>switchScreen(screen),200);
+}
+
+// ============================================================
+// SCREEN NAV
+// ============================================================
+let curScreen='home',finOpen=false;
+
+function switchScreen(name){
+  document.querySelectorAll('.screen,.screen-mentor').forEach(s=>{s.classList.remove('active');});
+  document.querySelectorAll('.l-nav-btn').forEach(b=>b.classList.remove('active'));
+  const s=document.getElementById('s-'+name);
+  if(s)s.classList.add('active');
+  const lb=document.getElementById('ln-'+name);
+  if(lb)lb.classList.add('active');
+  curScreen=name;
+  if(name==='finance'&&!finOpen){showPin();return;}
+  renderScreen(name);
+}
+
+function renderScreen(n){
+  if(n==='home')renderHome();
+  if(n==='finance'&&finOpen)renderFin();
+  if(n==='goals')renderGoals();
+  if(n==='fitness')renderFitness();
+  if(n==='study')renderStudy();
+  if(n==='calendar')renderCal();
+  if(n==='notes')renderNotes();
+  if(n==='settings')renderSettings();
+}
+
+// ============================================================
+// PIN
+// ============================================================
+const PIN='1947';
+let pb='';
+
+function showPin(){
+  document.getElementById('fin-pin').style.display='flex';
+  document.getElementById('fin-content').style.display='none';
+}
+
+function pp(v){
+  if(v==='c'){pb='';updDots();return;}
+  if(v==='d'){pb=pb.slice(0,-1);updDots();return;}
+  if(pb.length>=4)return;
+  pb+=v;updDots();
+  if(pb.length===4)setTimeout(()=>{
+    if(pb===PIN){finOpen=true;document.getElementById('fin-pin').style.display='none';document.getElementById('fin-content').style.display='block';document.getElementById('pin-err').textContent='';renderFin();}
+    else{document.getElementById('pin-err').textContent='Falscher PIN. Nochmal.';pb='';updDots();}
+  },150);
+}
+
+function updDots(){for(let i=0;i<4;i++)document.getElementById('pd'+i)?.classList.toggle('on',i<pb.length);}
+function lockFin(){finOpen=false;pb='';updDots();showPin();document.getElementById('pin-err').textContent='';}
+
+// ============================================================
+// GERMANY DAILY BRIEFING
+// ============================================================
+const GERMAN_HOLIDAYS_2025={
+  '2025-01-01':'🎉 Neujahr',
+  '2025-04-18':'✝️ Karfreitag',
+  '2025-04-21':'🐣 Ostermontag',
+  '2025-05-01':'💼 Tag der Arbeit',
+  '2025-05-29':'✝️ Christi Himmelfahrt',
+  '2025-06-09':'✝️ Pfingstmontag',
+  '2025-10-03':'🇩🇪 Tag der Deutschen Einheit',
+  '2025-11-01':'✝️ Allerheiligen',
+  '2025-12-25':'🎄 1. Weihnachtstag',
+  '2025-12-26':'🎄 2. Weihnachtstag',
+  '2026-01-01':'🎉 Neujahr',
+  '2026-04-03':'✝️ Karfreitag',
+  '2026-04-06':'🐣 Ostermontag',
+  '2026-05-01':'💼 Tag der Arbeit',
+  '2026-10-03':'🇩🇪 Tag der Deutschen Einheit',
+  '2026-12-25':'🎄 Weihnachten',
+};
+
+function getDailyAlert(){
+  const today=new Date();
+  const dk=today.toISOString().split('T')[0];
+  const day=today.getDay();
+  const hour=today.getHours();
+  if(GERMAN_HOLIDAYS_2025[dk])return`Heute ist Feiertag: ${GERMAN_HOLIDAYS_2025[dk]}. Genieß den Tag — kein Dienst, keine Schule.`;
+  if(day===0)return`Sonntag. Alles zu. Ruhetag in Deutschland — Läden geschlossen. Perfekt zum Lernen oder Erholen.`;
+  if(day===6)return`Samstag. Läden bis 20 Uhr offen. Kein Postbetrieb. Guter Tag für Besorgungen oder Gym.`;
+  if(hour<9)return`Früh in Deutschland. Bäckereien offen, U-Bahn läuft. Ruhige Zeit bevor der Tag anfängt.`;
+  if(hour>=9&&hour<12)return`Guter Morgen-Zeitfenster für Behördengänge — Ämter jetzt geöffnet. DB läuft pünktlich.`;
+  if(hour>=12&&hour<14)return`Mittagszeit. Viele Behörden haben jetzt Pause. Günstige DB-Tickets: prüf die App.`;
+  if(hour>=17)return`Feierabend-Zeit. Rushhour auf der DB. Wenn möglich etwas warten.`;
+  return`Normaler Werktag in Deutschland. Alles geöffnet, DB läuft. Fokus auf deine Ziele heute.`;
+}
+
+// ============================================================
+// NEWS & SIGNALS
+// ============================================================
+const NEWS=[
+  {id:1,cat:'geo',title:'Middle East tensions escalate — oil supply chains under pressure, energy stocks volatile',time:'1h',sig:true,stocks:['CVX','SHELL','TTE','ENI'],breaking:false},
+  {id:2,cat:'tech',title:'TSMC reports record quarterly revenue driven by AI chip demand — semiconductor cycle intact',time:'2h',sig:true,stocks:['TSM','ASML','MU','NVDA'],breaking:false},
+  {id:3,cat:'europe',title:'ECB signals rate cuts in June — European bank stocks rally on expectations',time:'3h',sig:true,stocks:['DBK','BNP','ING'],breaking:false},
+  {id:4,cat:'india',title:'India announces ₹10 lakh crore infrastructure capex — construction and power stocks surge',time:'4h',sig:true,stocks:['LT','NTPC','POWERGRID'],breaking:false},
+  {id:5,cat:'markets',title:'ASML order book grows 34% year-over-year — EUV demand from chipmakers at record high',time:'5h',sig:true,stocks:['ASML','MU','TSM'],breaking:false},
+  {id:6,cat:'geo',title:'G7 leaders meet in Berlin — Ukraine aid package and sanctions on agenda',time:'6h',sig:false,stocks:[],breaking:false},
+  {id:7,cat:'india',title:'Reliance Industries announces major renewable energy investment — clean tech play strengthens',time:'7h',sig:true,stocks:['RELIANCE','ADANIGREEN','TATAPOWER'],breaking:false},
+  {id:8,cat:'europe',title:'Germany raises defense budget by €100B — Rheinmetall and Airbus defense division surge',time:'8h',sig:true,stocks:['RHM','AIR','HO'],breaking:false},
+  {id:9,cat:'tech',title:'AI data center power demand hits record highs — utilities and energy stocks in focus',time:'9h',sig:true,stocks:['NEE','EOAN','VST'],breaking:false},
+  {id:10,cat:'markets',title:'EUR strengthens against USD — favorable for European exporters this quarter',time:'10h',sig:false,stocks:[],breaking:false},
+  {id:11,cat:'geo',title:'China manufacturing PMI beats expectations — global supply chain pressure easing',time:'11h',sig:true,stocks:['MAERSK','FMC','UPS'],breaking:false},
+  {id:12,cat:'india',title:'RBI holds interest rates steady — Indian rupee stable, markets react positively',time:'12h',sig:false,stocks:[],breaking:false},
+];
+
+const SIGNALS=[
+  {id:1,title:'AI Semiconductor Supercycle',summary:'TSMC, ASML, Micron — you played this before. Still mid-cycle. ASML is the irreplaceable pick.',stocks:['ASML','TSM','MU','NVDA','AMAT'],analysis:'EUV machines from ASML cannot be sourced anywhere else. HBM memory (Micron) demand from AI is exploding. This theme has 3-5 more years. Entry strategy: accumulate ASML on dips, watch monthly TSMC sales as leading indicator.',risk:'HIGH',sector:'Semiconductors'},
+  {id:2,title:'European Defense Rearming',summary:'Germany, France, Poland rearming. Rheinmetall has 3+ years of backlog. Structural not cyclical.',stocks:['RHM','AIR','HO','BAESY'],analysis:'Defense cycles last 5-10 years once started. Rheinmetall is the core German play — artillery, vehicles, ammunition. Airbus defense benefits from European NATO commitments. Low downside risk given geopolitical environment.',risk:'MEDIUM',sector:'Defense'},
+  {id:3,title:'India Infrastructure Decade',summary:'Government capex push into power and construction. NTPC is government-backed safe play.',stocks:['NTPC','POWERGRID','LT','ADANIGREEN'],analysis:'India needs to double electricity capacity by 2030. NTPC and PowerGrid have government-guaranteed returns. L&T wins the construction contracts. 10-year compounding story — currency risk is the main watch.',risk:'MEDIUM',sector:'Infra/Energy'},
+  {id:4,title:'Energy Geopolitical Premium',summary:'Shell, TotalEnergies at discount to fair value. 4%+ dividend yield while you wait.',stocks:['SHELL','TTE','ENI','CVX'],analysis:'Same thesis as your Chevron play before the war. European majors are cheaper than US peers. Middle East tension keeps energy price floor elevated. Good medium-term hold with strong dividend income.',risk:'MEDIUM',sector:'Energy'},
+];
+
+let nFilter='all',curSig=null,newsRefreshInterval=null;
+
+function catColor(c){return{geo:'#e84057',tech:'#6c5ce7',europe:'#00b894',india:'#f0a500',markets:'#e17055'}[c]||'#888';}
+function catLabel(c){return{geo:'🌍 GEOPOLITICAL',tech:'💻 TECH',europe:'🇪🇺 EUROPE',india:'🇮🇳 INDIA',markets:'📈 MARKETS'}[c]||c.toUpperCase();}
+
+function filterNews(cat,el){
+  nFilter=cat;
+  document.querySelectorAll('.news-filter .nf-pill').forEach(p=>p.classList.remove('on'));
+  el?.classList.add('on');
+  renderNewsList();
+}
+
+function renderNewsList(){
+  const el=document.getElementById('news-list');if(!el)return;
+  const filtered=nFilter==='all'?NEWS:NEWS.filter(n=>n.cat===nFilter);
+  el.innerHTML=filtered.slice(0,8).map(n=>`
+    <div class="news-item" onclick="newsClick(${n.id})">
+      <div class="n-cat" style="color:${catColor(n.cat)}">${catLabel(n.cat)}</div>
+      <div class="n-title">${n.title}</div>
+      <div class="n-meta">
+        <span class="n-time">${n.time} ago</span>
+        ${n.sig?`<div class="n-sig"><div class="sig-pulse"></div>SIGNAL</div>`:''}
+      </div>
+    </div>`).join('');
+  setEl('news-refresh-time',new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}));
+}
+
+function renderSignalsList(){
+  const el=document.getElementById('signals-list');if(!el)return;
+  el.innerHTML=SIGNALS.map(s=>`
+    <div class="sig-card" onclick="openSignal(${s.id})">
+      <div class="sig-header">
+        <div class="sig-dot"></div>
+        <div class="sig-title">${s.title}</div>
+        <span class="tag ${s.risk==='HIGH'?'tr':s.risk==='MEDIUM'?'ty':'tt'}">${s.risk}</span>
+      </div>
+      <div class="sig-body">${s.summary}</div>
+      <div class="stock-row">${s.stocks.slice(0,4).map(st=>`<div class="stock-chip">${st}</div>`).join('')}</div>
+    </div>`).join('');
+}
+
+function refreshNews(){renderNewsList();}
+
+function newsClick(id){
+  const n=NEWS.find(x=>x.id===id);if(!n||!n.sig)return;
+  const sig=SIGNALS.find(s=>s.stocks.some(st=>n.stocks.includes(st)));
+  if(sig)openSignal(sig.id);
+}
+
+function openSignal(id){
+  const s=SIGNALS.find(x=>x.id===id);if(!s)return;
+  curSig=s;
+  setEl('sig-ttl','⚡ '+s.title);
+  document.getElementById('sig-body').innerHTML=`
+    <div class="flex g4 mb10"><span class="tag tp">${s.sector}</span><span class="tag ${s.risk==='HIGH'?'tr':'ty'}">${s.risk} RISK</span></div>
+    <div style="line-height:1.7">${s.analysis}</div>`;
+  document.getElementById('sig-stocks').innerHTML=s.stocks.map(st=>`<div class="stock-chip">${st}</div>`).join('');
+  openModal('signal-modal');
+}
+
+async function deepAnalysis(){
+  const key=S.apiKey;
+  if(!key){alert('API Key fehlt! Geh zu Settings und trag deinen Anthropic API Key ein.');return;}
+  if(!curSig)return;
+  const btn=document.querySelector('#signal-modal .btn');
+  btn.textContent='🤖 Analysiere...';btn.disabled=true;
+  const prompt=`Financial analyst mentor. Analyze this investment signal for a young investor trading European (DAX/Euronext) and Indian (NSE/BSE) markets. He has limited capital and is a macro-event investor who previously bought Chevron before the Ukraine war and TSMC/Micron/ASML on the AI boom.\n\nSignal: ${curSig.title}\nStocks: ${curSig.stocks.join(', ')}\nContext: ${curSig.analysis}\n\nProvide:\n1. Real opportunity right now? Yes/No/Maybe + clear why\n2. Top 3 stocks ranked with specific reasoning\n3. Entry strategy: DCA vs lump sum, suggested timeframe\n4. Key risks to watch\n5. Specific indicators/news to monitor for entry/exit\n\nBe direct, specific, max 220 words. Quality > quantity for limited capital.`;
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})
+    });
+    const data=await resp.json();
+    if(data.error){throw new Error(data.error.message);}
+    const txt=data.content?.map(c=>c.text||'').join('')||'Error.';
+    document.getElementById('sig-body').innerHTML+=`
+      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+        <div class="lbl" style="color:var(--accent2);margin-bottom:8px">🤖 AI ANALYSIS</div>
+        <div style="font-size:13px;line-height:1.7;white-space:pre-wrap">${txt}</div>
+      </div>`;
+  }catch(e){
+    document.getElementById('sig-body').innerHTML+=`<div style="color:var(--accent3);font-size:13px;margin-top:10px">Error: ${e.message}</div>`;
+  }
+  btn.textContent='🤖 AI Deep Analysis';btn.disabled=false;
+}
+
+// ============================================================
+// HOME
+// ============================================================
+function renderHome(){
+  const today=new Date();
+  const hour=today.getHours();
+  const g=hour<5?'Gute Nacht':hour<12?'Guten Morgen':hour<17?'Guten Tag':'Guten Abend';
+  setEl('h-greeting','');
+  const grEl=document.getElementById('h-greeting');
+  if(grEl)grEl.innerHTML=`${g}, <span>Freund 👋</span>`;
+  const days=['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+  const months=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+  setEl('h-date',`${days[today.getDay()]}, ${today.getDate()}. ${months[today.getMonth()]} ${today.getFullYear()}`);
+  setEl('h-alert-text',getDailyAlert());
+  const exam=Math.ceil((new Date('2027-05-01')-today)/86400000);
+  setEl('h-exam-days',exam);
+  const dk=today.toISOString().split('T')[0];
+  const sh=S.shifts[dk];
+  const shN={frueh:'🌅 Früh',spaet:'🌆 Spät',nacht:'🌙 Nacht',frei:'🌿 Frei',kurs:'📖 Kurs'};
+  setEl('h-shift',sh?shN[sh]:'— kein Dienst');
+  renderNewsList();
+  renderSignalsList();
+  renderHabits('h-habits','h-streak');
+  drawGoalRings('h-rings',S.goals);
+}
+
+// ============================================================
+// HABITS
+// ============================================================
+function renderHabits(gridId,streakId){
+  const today=new Date().toDateString();
+  if(S.lastHabit!==today){S.habits.forEach(h=>h.done=false);S.lastHabit=today;saveS();}
+  const el=document.getElementById(gridId);if(!el)return;
+  el.innerHTML=S.habits.map(h=>`<div class="hb ${h.done?'done':''}" onclick="toggleHabit('${h.id}','${gridId}','${streakId}')"><div class="hb-icon">${h.icon}</div>${h.label}</div>`).join('');
+  if(streakId)setEl(streakId,S.streak+' 🔥');
+}
+
+function toggleHabit(id,gridId,streakId){
+  const h=S.habits.find(x=>x.id===id);if(!h)return;
+  h.done=!h.done;
+  if(S.habits.every(x=>x.done))S.streak++;
+  saveS();renderHabits(gridId,streakId);
+  renderHabits('fit-habits','');
+}
+
+// ============================================================
+// CHARTS
+// ============================================================
+function drawDonut(canvasId,data,colors,labels){
+  const canvas=document.getElementById(canvasId);if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const W=canvas.parentElement.offsetWidth||300;const H=130;
+  canvas.width=W;canvas.height=H;ctx.clearRect(0,0,W,H);
+  const total=data.reduce((s,v)=>s+v,0)||1;
+  const cx=H/2+10,cy=H/2,r=H/2-8,inner=H/2-22;
+  let start=-Math.PI/2;
+  data.forEach((v,i)=>{
+    const sw=(v/total)*Math.PI*2;
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,start,start+sw);
+    ctx.fillStyle=colors[i];ctx.fill();start+=sw;
+  });
+  ctx.beginPath();ctx.arc(cx,cy,inner,0,Math.PI*2);
+  ctx.fillStyle=S.dark?'#0d0d1a':'#fff';ctx.fill();
+  const lx=H+20,ly=12;
+  labels.forEach((lbl,i)=>{
+    ctx.fillStyle=colors[i];ctx.fillRect(lx,ly+i*22,10,10);
+    ctx.fillStyle=S.dark?'rgba(255,255,255,0.5)':'rgba(0,0,0,0.5)';
+    ctx.font='10px Space Mono,monospace';ctx.textAlign='left';
+    ctx.fillText(lbl,lx+14,ly+i*22+9);
+  });
+}
+
+function drawLine(canvasId,datasets,labels,height){
+  const canvas=document.getElementById(canvasId);if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const W=canvas.parentElement.offsetWidth||300;const H=height||180;
+  canvas.width=W;canvas.height=H;ctx.clearRect(0,0,W,H);
+  const pad={t:10,r:10,b:28,l:44};
+  const aw=W-pad.l-pad.r,ah=H-pad.t-pad.b;
+  const allVals=datasets.flatMap(d=>d.data).filter(v=>!isNaN(v));
+  const max=Math.max(...allVals,1);
+  const sx=i=>pad.l+i*(aw/Math.max(labels.length-1,1));
+  const sy=v=>pad.t+ah-((v/max)*ah);
+  // Grid
+  ctx.strokeStyle=S.dark?'rgba(255,255,255,0.05)':'rgba(0,0,0,0.06)';ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){
+    const y=pad.t+(ah/4)*i;
+    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();
+    ctx.fillStyle=S.dark?'rgba(255,255,255,0.3)':'rgba(0,0,0,0.35)';
+    ctx.font='8px Space Mono,monospace';ctx.textAlign='right';
+    ctx.fillText('€'+Math.round(max-(max/4)*i).toLocaleString(),pad.l-4,y+3);
+  }
+  ctx.fillStyle=S.dark?'rgba(255,255,255,0.2)':'rgba(0,0,0,0.2)';
+  ctx.font='8px Space Mono,monospace';ctx.textAlign='center';
+  labels.forEach((l,i)=>{if(l&&i%12===0)ctx.fillText(l,sx(i),H-6);});
+  // Lines
+  datasets.forEach(ds=>{
+    if(!ds.data.length)return;
+    ctx.strokeStyle=ds.color;ctx.lineWidth=2;ctx.setLineDash(ds.dash||[]);
+    ctx.lineJoin='round';ctx.lineCap='round';
+    ctx.beginPath();
+    ds.data.forEach((v,i)=>{i===0?ctx.moveTo(sx(i),sy(v)):ctx.lineTo(sx(i),sy(v));});
+    ctx.stroke();ctx.setLineDash([]);
+  });
+}
+
+function drawGoalRings(elId,goals){
+  const el=document.getElementById(elId);if(!el)return;
+  el.innerHTML='';
+  const colors=['#6c5ce7','#00b894','#f0a500','#e84057','#0984e3'];
+  goals.forEach((g,gi)=>{
+    const pct=Math.min(100,Math.round((g.current/g.target)*100));
+    const size=68;
+    const wrap=document.createElement('div');wrap.className='ring-item';
+    const canvas=document.createElement('canvas');
+    canvas.width=size;canvas.height=size;canvas.style.width=size+'px';canvas.style.height=size+'px';
+    const ctx=canvas.getContext('2d');
+    const cx=size/2,cy=size/2,r=size/2-5;
+    ctx.strokeStyle=S.dark?'rgba(255,255,255,0.08)':'rgba(0,0,0,0.06)';ctx.lineWidth=6;
+    ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.stroke();
+    if(pct>0){
+      ctx.strokeStyle=colors[gi%colors.length];ctx.lineWidth=6;ctx.lineCap='round';
+      ctx.beginPath();ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+(pct/100)*Math.PI*2);ctx.stroke();
+    }
+    ctx.fillStyle=S.dark?'rgba(255,255,255,0.85)':'rgba(0,0,0,0.75)';
+    ctx.font='bold 13px Space Mono,monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(pct+'%',cx,cy);
+    const label=document.createElement('div');label.className='ring-lbl';label.textContent=g.emoji+' '+g.title.slice(0,9);
+    wrap.appendChild(canvas);wrap.appendChild(label);el.appendChild(wrap);
+  });
+}
+
+function drawHeatmap(elId){
+  const el=document.getElementById(elId);if(!el)return;
+  el.innerHTML='';
+  const today=new Date();
+  for(let i=83;i>=0;i--){
+    const d=new Date(today);d.setDate(today.getDate()-i);
+    const key=d.toISOString().split('T')[0];
+    const v=S.studyDays[key]||0;
+    const cell=document.createElement('div');
+    cell.className='hm-c'+(v>=3?' l4':v>=2?' l3':v>=1?' l2':v>0?' l1':'');
+    cell.title=key+': '+v+' sessions';el.appendChild(cell);
+  }
+}
+
+function drawWeightChart(canvasId){
+  if(!S.weights.length){return;}
+  const sorted=[...S.weights].sort((a,b)=>new Date(a.date)-new Date(b.date)).slice(-12);
+  const labels=sorted.map(w=>new Date(w.date).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'}));
+  drawLine(canvasId,[{data:sorted.map(w=>w.value),color:'#00b894',dash:[]}],labels,120);
+}
+
+function buildProjection(){
+  const months=[],labels=[];
+  const now=new Date();
+  for(let i=0;i<=120;i++){
+    const d=new Date(now);d.setMonth(now.getMonth()+i);
+    months.push(d);
+    labels.push(i%12===0?d.getFullYear().toString():'');
+  }
+  const cur=S.buckets.reduce((s,b)=>s+b.amount,0);
+  let pv=cur,rv=cur,ov=cur,av=cur;
+  const pess=[cur],real=[cur],opt=[cur],actual=[cur];
+  months.slice(1).forEach(d=>{
+    const afterSep=d>new Date('2025-09-01');
+    const afterGrad=d>new Date('2027-05-01');
+    const loan=afterSep?0:150;
+    pv+=Math.max(0,(afterGrad?2000:S.salary)-623-loan)*0.55;
+    rv+=Math.max(0,(afterGrad?2400:S.salary)-623-loan)*0.7;
+    ov+=Math.max(0,(afterGrad?2800:S.salary)-623-loan)*0.85+100;
+    av+=Math.max(0,S.salary-623-loan)*0.6;
+    pess.push(Math.round(pv));real.push(Math.round(rv));opt.push(Math.round(ov));actual.push(Math.round(av));
+  });
+  return{pess,real,opt,actual,labels};
+}
+
+// ============================================================
+// FINANCE
+// ============================================================
+let expFilter='all',editExpId=null;
+
+function renderFin(){
+  if(!finOpen)return;
+  const income=S.salary+S.extraIncome;
+  const loan=new Date()<new Date('2025-09-01')?150:0;
+  const m=new Date().getMonth(),y=new Date().getFullYear();
+  const mExp=S.expenses.filter(e=>{const d=new Date(e.date);return d.getMonth()===m&&d.getFullYear()===y;});
+  const spent=mExp.reduce((s,e)=>s+e.amount,0);
+  const left=income-spent;
+  const leftAfter=income-623-loan;
+  const bpct=Math.min(100,Math.round((spent/income)*100));
+  const saved=S.buckets.reduce((s,b)=>s+b.amount,0);
+  const s8k=Math.min(100,Math.round((saved/8000)*100));
+  setEl('fin-salary','€'+income.toLocaleString());
+  setEl('fin-extra','+ €'+S.extraIncome+' extra income');
+  setEl('fin-spent','€'+spent.toFixed(2));
+  setEl('fin-left','€'+left.toFixed(2));
+  setEl('fin-bpct',bpct+'%');
+  const bbar=document.getElementById('fin-bbar');if(bbar)bbar.style.width=bpct+'%';
+  setEl('fin-actual','~€'+Math.max(0,leftAfter).toFixed(0));
+  setEl('fin-saved','€'+saved.toFixed(2));
+  setEl('fin-8kpct',s8k+'%');
+  const k8=document.getElementById('fin-8kbar');if(k8)k8.style.width=s8k+'%';
+  // Net worth
+  const eur=saved;const inr=Math.round(eur*90);
+  const pct=Math.min(100,Math.round((inr/30000000)*100));
+  setEl('fin-nw-eur','€'+eur.toLocaleString());
+  setEl('fin-nw-inr','₹'+inr.toLocaleString());
+  const nwbar=document.getElementById('fin-nw-bar');if(nwbar)nwbar.style.width=pct+'%';
+  setEl('fin-nw-pct',pct+'% of ₹3 Crore target · 2035');
+  // Loan
+  const lPaid=S.loanPayments.reduce((s,p)=>s+p.eurAmt*90,S.loanPaid);
+  const lRem=Math.max(0,S.loanTotal-lPaid);
+  const lpct=Math.min(100,Math.round((lPaid/S.loanTotal)*100));
+  setEl('fin-loan-rem','₹'+lRem.toLocaleString());
+  setEl('fin-loan-paid','₹'+lPaid.toLocaleString());
+  const lbar=document.getElementById('fin-loan-bar');if(lbar)lbar.style.width=lpct+'%';
+  renderLoanList();
+  renderBuckets();
+  renderExpenses();
+  renderWatchlist();
+  setTimeout(()=>{
+    const bColors=['#f0a500','#00b894','#6c5ce7','#e84057','#0984e3'];
+    drawDonut('fin-donut',S.buckets.map(b=>b.amount||0.1),bColors,S.buckets.map(b=>b.emoji+' '+b.name));
+    const proj=buildProjection();
+    drawLine('fin-proj',[
+      {data:proj.pess,color:'#e84057',dash:[5,3]},
+      {data:proj.real,color:'#f0a500',dash:[]},
+      {data:proj.opt,color:'#00b894',dash:[]},
+      {data:proj.actual,color:'#6c5ce7',dash:[2,2]},
+    ],proj.labels,180);
+  },150);
+}
+
+function renderBuckets(){
+  const el=document.getElementById('fin-buckets');if(!el)return;
+  el.innerHTML=S.buckets.map(b=>{
+    const p=b.target>0?Math.min(100,Math.round((b.amount/b.target)*100)):0;
+    return`<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <div style="width:34px;height:34px;border-radius:10px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">${b.emoji}</div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+          <span style="font-size:13px;font-weight:500">${b.name}</span>
+          <span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--accent)">€${b.amount.toFixed(0)}</span>
+        </div>
+        <div class="prog"><div class="pf pf-t" style="width:${p}%"></div></div>
+        <div style="font-size:10px;color:var(--text3);margin-top:3px">Ziel €${b.target} · ${p}%</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderExpenses(){
+  const el=document.getElementById('fin-expenses');if(!el)return;
+  let list=expFilter==='all'?S.expenses:S.expenses.filter(e=>e.cat===expFilter);
+  list=[...list].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,20);
+  const ce={food:'🍽',transport:'🚊',rent:'🏠',utilities:'💡',gym:'💪',other:'📦'};
+  el.innerHTML=!list.length?'<div class="sm muted">Keine Ausgaben.</div>':list.map(e=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--border)">
+      <div style="width:34px;height:34px;border-radius:10px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">${ce[e.cat]||'📦'}</div>
+      <div style="flex:1"><div style="font-size:13px;font-weight:500">${e.name}</div><div style="font-size:11px;color:var(--text3);font-family:var(--mono)">${new Date(e.date).toLocaleDateString('de-DE')}</div></div>
+      <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--accent3)">-€${Number(e.amount).toFixed(2)}</div>
+      <button onclick="editExp(${e.id})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:15px;padding:4px">✏️</button>
+      <button onclick="delExp(${e.id})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:15px;padding:4px">🗑️</button>
+    </div>`).join('');
+}
+
+function renderWatchlist(){
+  const el=document.getElementById('fin-watchlist');if(!el)return;
+  el.innerHTML=!S.watchlist.length?'<div class="sm muted">Keine Aktien.</div>':S.watchlist.map(w=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--border)">
+      <div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--accent2);min-width:56px">${w.ticker}</div>
+      <div style="flex:1"><div style="font-size:12px;font-weight:500">${w.name}</div><div style="font-size:10px;color:var(--text3);font-family:var(--mono)">${w.exchange}</div></div>
+      ${w.target?`<div style="font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:600">→ €${w.target}</div>`:''}
+      <button onclick="delWatch(${w.id})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:15px;padding:4px">🗑️</button>
+    </div>`).join('');
+}
+
+function renderLoanList(){
+  const el=document.getElementById('fin-loan-list');if(!el)return;
+  el.innerHTML=!S.loanPayments.length?'<div class="xs muted">Noch keine Zahlungen.</div>':[...S.loanPayments].reverse().slice(0,5).map(p=>`
+    <div class="loan-entry">
+      <div style="flex:1"><div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--accent2)">€${p.eurAmt} · ₹${Math.round(p.eurAmt*90).toLocaleString()}</div><div style="font-size:11px;color:var(--text3)">${new Date(p.date).toLocaleDateString('de-DE')}${p.note?' · '+p.note:''}</div></div>
+      <button onclick="delLoan(${p.id})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:15px">🗑️</button>
+    </div>`).join('');
+}
+
+function filterExp(cat,el){
+  expFilter=cat;
+  document.querySelectorAll('.sx .nf-pill').forEach(p=>p.classList.remove('on'));
+  el?.classList.add('on');renderExpenses();
+}
+
+function openExpModal(){
+  editExpId=null;setEl('exp-ttl','Ausgabe hinzufügen');
+  ['em-name','em-amt'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('em-date').value=new Date().toISOString().split('T')[0];
+  openModal('expense-modal');
+}
+
+function editExp(id){
+  const e=S.expenses.find(x=>x.id===id);if(!e)return;
+  editExpId=id;setEl('exp-ttl','Ausgabe bearbeiten');
+  document.getElementById('em-name').value=e.name;
+  document.getElementById('em-amt').value=e.amount;
+  document.getElementById('em-cat').value=e.cat;
+  document.getElementById('em-date').value=e.date;
+  openModal('expense-modal');
+}
+
+function saveExp(){
+  const name=document.getElementById('em-name').value.trim();
+  const amt=parseFloat(document.getElementById('em-amt').value);
+  const cat=document.getElementById('em-cat').value;
+  const date=document.getElementById('em-date').value;
+  if(!name||!amt||!date)return alert('Alle Felder ausfüllen');
+  if(editExpId){const i=S.expenses.findIndex(e=>e.id===editExpId);if(i>=0)S.expenses[i]={id:editExpId,name,amount:amt,cat,date};editExpId=null;}
+  else S.expenses.push({id:Date.now(),name,amount:amt,cat,date});
+  saveS();closeModal('expense-modal');renderExpenses();renderFin();
+}
+
+function delExp(id){if(!confirm('Löschen?'))return;S.expenses=S.expenses.filter(e=>e.id!==id);saveS();renderExpenses();renderFin();}
+
+function openBucketModal(){
+  document.getElementById('bucket-edit').innerHTML=S.buckets.map((b,i)=>`
+    <div style="margin-bottom:12px"><div style="font-size:13px;margin-bottom:6px">${b.emoji} ${b.name}</div>
+    <div class="mrow"><input type="number" step="0.01" value="${b.amount}" placeholder="Aktuell €" id="ba${i}"><input type="number" step="0.01" value="${b.target}" placeholder="Ziel €" id="bt${i}"></div></div>`).join('');
+  openModal('bucket-modal');
+}
+
+function saveBuckets(){
+  S.buckets.forEach((b,i)=>{b.amount=parseFloat(document.getElementById('ba'+i)?.value)||0;b.target=parseFloat(document.getElementById('bt'+i)?.value)||0;});
+  saveS();closeModal('bucket-modal');renderFin();
+}
+
+function saveSalary(){
+  const sal=parseFloat(document.getElementById('m-sal').value);
+  const extra=parseFloat(document.getElementById('m-extra').value)||0;
+  if(!sal)return alert('Gehalt eingeben');
+  S.salary=sal;S.extraIncome=extra;saveS();closeModal('salary-modal');renderFin();
+}
+
+function saveLoan(){
+  const amt=parseFloat(document.getElementById('lm-amt').value);
+  const date=document.getElementById('lm-date').value;
+  const note=document.getElementById('lm-note').value.trim();
+  if(!amt||!date)return alert('Betrag und Datum');
+  S.loanPayments.push({id:Date.now(),eurAmt:amt,date,note});saveS();closeModal('loan-modal');renderFin();
+}
+
+function delLoan(id){S.loanPayments=S.loanPayments.filter(p=>p.id!==id);saveS();renderFin();}
+
+function saveWatch(){
+  const ticker=document.getElementById('wm-ticker').value.trim().toUpperCase();
+  const name=document.getElementById('wm-name').value.trim();
+  const exchange=document.getElementById('wm-exchange').value;
+  const target=parseFloat(document.getElementById('wm-target').value)||null;
+  if(!ticker)return alert('Ticker eingeben');
+  S.watchlist.push({id:Date.now(),ticker,name,exchange,target});
+  saveS();closeModal('watch-modal');renderWatchlist();
+}
+
+function delWatch(id){S.watchlist=S.watchlist.filter(w=>w.id!==id);saveS();renderWatchlist();}
+
+// ============================================================
+// GOALS
+// ============================================================
+function renderGoals(){
+  drawGoalRings('goals-rings',S.goals);
+  const el=document.getElementById('goals-list');if(!el)return;
+  el.innerHTML=S.goals.map(g=>{
+    const pct=Math.min(100,Math.round((g.current/g.target)*100));
+    const dl=Math.ceil((new Date(g.deadline)-new Date())/86400000);
+    return`<div class="card mb10">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <span style="font-size:24px">${g.emoji}</span>
+        <div style="flex:1"><div style="font-size:15px;font-weight:700">${g.title}</div><div style="font-size:11px;color:var(--text2);font-family:var(--mono);margin-top:2px">📅 ${new Date(g.deadline).toLocaleDateString('de-DE',{month:'short',year:'numeric'})} · ${dl>0?dl+' Tage':'Abgelaufen'}</div></div>
+        <span class="tag ${pct>=100?'tt':'ty'}">${pct}%</span>
+      </div>
+      <div class="prog"><div class="pf ${pct>=100?'pf-t':''}" style="width:${pct}%"></div></div>
+      <div style="font-size:12px;color:var(--text2);margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">→ <span style="color:var(--accent2);font-weight:500">${g.next}</span></div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="btn-ghost btn-sm" onclick="updateGoal(${g.id})">Update</button>
+        <button onclick="delGoal(${g.id})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function saveGoal(){
+  const title=document.getElementById('gm-title').value.trim(),emoji=document.getElementById('gm-emoji').value.trim()||'🎯';
+  const deadline=document.getElementById('gm-deadline').value,next=document.getElementById('gm-next').value.trim();
+  const cur=parseFloat(document.getElementById('gm-cur').value)||0,tgt=parseFloat(document.getElementById('gm-tgt').value)||100;
+  if(!title||!deadline)return alert('Titel und Datum');
+  S.goals.push({id:Date.now(),emoji,title,deadline,next,current:cur,target:tgt});
+  saveS();closeModal('goal-modal');renderGoals();
+}
+
+function updateGoal(id){
+  const g=S.goals.find(x=>x.id===id);if(!g)return;
+  const v=prompt(`Fortschritt: ${g.current} / ${g.target}`);
+  if(v!==null&&!isNaN(parseFloat(v))){g.current=parseFloat(v);saveS();renderGoals();}
+}
+
+function delGoal(id){if(!confirm('Löschen?'))return;S.goals=S.goals.filter(g=>g.id!==id);saveS();renderGoals();}
+
+// ============================================================
+// FITNESS
+// ============================================================
+function renderFitness(){
+  const sep=Math.max(0,Math.ceil((new Date('2025-09-01')-new Date())/86400000));
+  setEl('fit-sep',sep);setEl('fit-streak',S.streak);
+  renderHabits('fit-habits','');
+  renderWoList();renderWtList();
+  setTimeout(()=>{drawWeightChart('fit-wt-chart');drawHeatmap('fit-heatmap');},100);
+}
+
+function renderWoList(){
+  const el=document.getElementById('fit-wo-list');if(!el)return;
+  el.innerHTML=!S.workouts.length?'<div class="sm muted">Noch keine Workouts.</div>':[...S.workouts].reverse().slice(0,8).map(w=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:20px">🏋️</span>
+      <div style="flex:1"><div style="font-size:13px;font-weight:500">${w.type}</div><div style="font-size:11px;color:var(--text3);font-family:var(--mono)">${w.duration} Min · ${new Date(w.date).toLocaleDateString('de-DE')}</div></div>
+      <button onclick="delWo(${w.id})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px">🗑️</button>
+    </div>`).join('');
+}
+
+function renderWtList(){
+  const el=document.getElementById('fit-wt-list');if(!el)return;
+  el.innerHTML=!S.weights.length?'<div class="sm muted">Noch keine Einträge.</div>':[...S.weights].reverse().slice(0,6).map(w=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:12px;color:var(--text2);font-family:var(--mono)">${new Date(w.date).toLocaleDateString('de-DE')}</span>
+      <span style="font-family:var(--mono);font-weight:700;color:var(--accent)">${w.value} kg</span>
+      <button onclick="delWt(${w.id})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px">🗑️</button>
+    </div>`).join('');
+}
+
+function saveWorkout(){
+  const type=document.getElementById('wom-type').value.trim(),dur=document.getElementById('wom-dur').value;
+  const notes=document.getElementById('wom-notes').value.trim(),date=document.getElementById('wom-date').value;
+  if(!type||!dur||!date)return alert('Felder ausfüllen');
+  S.workouts.push({id:Date.now(),type,duration:parseInt(dur),notes,date});
+  S.studyDays[date]=(S.studyDays[date]||0)+1;
+  saveS();closeModal('wo-modal');renderFitness();
+}
+
+function delWo(id){S.workouts=S.workouts.filter(w=>w.id!==id);saveS();renderFitness();}
+
+function saveWeight(){
+  const val=parseFloat(document.getElementById('wtm-val').value),date=document.getElementById('wtm-date').value;
+  if(!val||!date)return alert('Felder ausfüllen');
+  S.weights.push({id:Date.now(),value:val,date});saveS();closeModal('wt-modal');renderFitness();
+}
+
+function delWt(id){S.weights=S.weights.filter(w=>w.id!==id);saveS();renderFitness();}
+
+// ============================================================
+// STUDY
+// ============================================================
+function renderStudy(){
+  const diff=Math.ceil((new Date('2027-05-01')-new Date())/86400000);
+  setEl('study-days',diff);setEl('study-weekly',S.weeklyTarget||'Nicht gesetzt');
+  renderTopics();renderQAList();
+}
+
+function switchStudy(tab,el){
+  document.querySelectorAll('#s-study .nf-pill').forEach(p=>p.classList.remove('on'));
+  el?.classList.add('on');
+  document.getElementById('study-topics-panel').style.display=tab==='topics'?'block':'none';
+  document.getElementById('study-exam-panel').style.display=tab==='exam'?'block':'none';
+}
+
+function renderTopics(){
+  const el=document.getElementById('study-topics-list');if(!el)return;
+  const done=S.topics.filter(t=>t.done).length;
+  el.innerHTML=`<div style="font-size:12px;color:var(--text2);margin-bottom:10px">${done}/${S.topics.length} abgeschlossen</div>`+
+  S.topics.map((t,ti)=>{
+    const ds=t.subtopics.filter(s=>s.done).length;
+    return`<div class="topic-item">
+      <div style="display:flex;align-items:center;gap:8px;cursor:pointer" onclick="toggleTopicExpand('texp-${ti}','tarr-${ti}')">
+        <div class="tchk ${t.done?'done':''}" onclick="event.stopPropagation();topicDone(${ti})">${t.done?'✓':''}</div>
+        <div style="flex:1;font-size:13px;font-weight:500">${t.name}</div>
+        <span class="tag ty" style="font-size:9px">${ds}/${t.subtopics.length}</span>
+        <span style="color:var(--text3);font-size:13px;transition:.2s" id="tarr-${ti}">▾</span>
+      </div>
+      <div style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)" id="texp-${ti}">
+        ${t.notes?`<div style="font-size:12px;color:var(--text2);margin-bottom:8px;line-height:1.5">${t.notes}</div>`:''}
+        ${t.subtopics.map((s,si)=>`<div class="sub-row"><div class="schk ${s.done?'done':''}" onclick="subDone(${ti},${si})">${s.done?'✓':''}</div><span>${s.name}</span></div>`).join('')}
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button class="btn-ghost btn-sm" onclick="addSub(${ti})">+ Unterthema</button>
+          <button onclick="delTopic(${ti})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px">🗑️</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleTopicExpand(contentId,arrowId){
+  const c=document.getElementById(contentId);const a=document.getElementById(arrowId);
+  if(!c)return;
+  const open=c.style.display==='block';
+  c.style.display=open?'none':'block';
+  if(a)a.style.transform=open?'':'rotate(180deg)';
+}
+
+function topicDone(i){
+  S.topics[i].done=!S.topics[i].done;
+  S.studyDays[new Date().toISOString().split('T')[0]]=(S.studyDays[new Date().toISOString().split('T')[0]]||0)+1;
+  saveS();renderTopics();
+}
+
+function subDone(ti,si){S.topics[ti].subtopics[si].done=!S.topics[ti].subtopics[si].done;saveS();renderTopics();}
+function addSub(ti){const n=prompt('Unterthema:');if(n){S.topics[ti].subtopics.push({name:n,done:false});saveS();renderTopics();}}
+function delTopic(i){if(!confirm('Löschen?'))return;S.topics.splice(i,1);saveS();renderTopics();}
+
+function saveTopic(){
+  const name=document.getElementById('tm-name').value.trim();
+  const notes=document.getElementById('tm-notes').value.trim();
+  const subs=document.getElementById('tm-subs').value.split(',').map(s=>s.trim()).filter(Boolean);
+  if(!name)return alert('Thema eingeben');
+  S.topics.push({id:Date.now(),name,notes,done:false,subtopics:subs.map(s=>({name:s,done:false}))});
+  saveS();closeModal('topic-modal');renderTopics();
+}
+
+function renderQAList(){
+  const el=document.getElementById('study-qa-list');if(!el)return;
+  el.innerHTML=!S.qaList.length?'<div class="sm muted">Noch keine Fragen.</div>':S.qaList.map((q,i)=>`
+    <div class="card-sm mb8">
+      <div style="font-size:13px;font-weight:600;cursor:pointer" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">F: ${q.question}</div>
+      <div style="display:none;font-size:12px;color:var(--text2);padding-top:8px;border-top:1px solid var(--border);margin-top:8px;line-height:1.6">A: ${q.answer}</div>
+      <button onclick="delQA(${i})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;padding:4px;margin-top:4px">🗑️</button>
+    </div>`).join('');
+}
+
+function saveQA(){
+  const q=document.getElementById('qam-q').value.trim(),a=document.getElementById('qam-a').value.trim();
+  if(!q||!a)return alert('Beide Felder');
+  S.qaList.push({id:Date.now(),question:q,answer:a});saveS();closeModal('qa-modal');renderQAList();
+}
+
+function delQA(i){S.qaList.splice(i,1);saveS();renderQAList();}
+function saveWeekly(){S.weeklyTarget=document.getElementById('wkm-inp').value.trim();saveS();closeModal('weekly-modal');renderStudy();}
+
+let qi=[],qidx=0,qcor=0;
+function startQuiz(){
+  if(!S.qaList.length)return alert('Keine Fragen!');
+  qi=[...S.qaList].sort(()=>Math.random()-.5);qidx=0;qcor=0;
+  openModal('quiz-modal');showQ();
+}
+function showQ(){
+  setEl('quiz-prog',`${qidx+1} / ${qi.length}`);
+  if(qidx>=qi.length){
+    document.getElementById('quiz-q').textContent='';
+    ['quiz-a','quiz-btns'].forEach(id=>document.getElementById(id).style.display='none');
+    document.getElementById('quiz-result').style.display='block';
+    document.getElementById('quiz-result').innerHTML=`Fertig! 🎉 <span style="color:var(--accent2)">${qcor}/${qi.length}</span>`;return;
+  }
+  document.getElementById('quiz-q').textContent='F: '+qi[qidx].question;
+  document.getElementById('quiz-a').style.display='none';
+  document.getElementById('quiz-a').textContent='A: '+qi[qidx].answer;
+  document.getElementById('quiz-btns').style.display='none';
+  document.getElementById('quiz-result').style.display='none';
+}
+function revealAns(){document.getElementById('quiz-a').style.display='block';document.getElementById('quiz-btns').style.display='flex';}
+function qNext(c){if(c)qcor++;qidx++;showQ();}
+
+// ============================================================
+// CALENDAR
+// ============================================================
+let calY=new Date().getFullYear(),calM=new Date().getMonth();
+
+function renderCal(){
+  const months=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+  setEl('cal-lbl',months[calM]+' '+calY);
+  const el=document.getElementById('cal-grid');if(!el)return;
+  const days=['Mo','Di','Mi','Do','Fr','Sa','So'];
+  let html=days.map(d=>`<div class="cal-dn">${d}</div>`).join('');
+  const first=new Date(calY,calM,1).getDay(),offset=first===0?6:first-1;
+  const dim=new Date(calY,calM+1,0).getDate();
+  const today=new Date();
+  for(let i=0;i<offset;i++)html+='<div></div>';
+  let free=0,work=0;
+  for(let d=1;d<=dim;d++){
+    const key=`${calY}-${String(calM+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const sh=S.shifts[key];
+    const isT=today.getDate()===d&&today.getMonth()===calM&&today.getFullYear()===calY;
+    if(sh==='frei')free++;else if(sh)work++;
+    html+=`<div class="cal-day ${isT?'today':''}" onclick="calClick('${key}')">${d}${sh?`<div class="sd sd-${sh}"></div>`:''}</div>`;
+  }
+  el.innerHTML=html;
+  setEl('cal-free',free);setEl('cal-work',work);
+  renderReminders();
+}
+
+function calNav(d){calM+=d;if(calM>11){calM=0;calY++;}if(calM<0){calM=11;calY--;}renderCal();}
+
+function calClick(key){
+  const sh=S.shifts[key];
+  if(sh){if(confirm(`${key}: ${sh}\nOK = Löschen`)){delete S.shifts[key];saveS();renderCal();}}
+  else{const el=document.getElementById('cal-shift-date');if(el)el.value=key;}
+}
+
+function addShift(){
+  const date=document.getElementById('cal-shift-date')?.value;
+  const type=document.getElementById('cal-shift-type')?.value;
+  if(!date)return alert('Datum wählen');
+  S.shifts[date]=type;saveS();renderCal();
+}
+
+function renderReminders(){
+  const el=document.getElementById('cal-reminders');if(!el)return;
+  const up=S.reminders.filter(r=>new Date(r.date)>=new Date()).sort((a,b)=>new Date(a.date)-new Date(b.date));
+  el.innerHTML=!up.length?'<div class="sm muted">Keine Erinnerungen.</div>':up.map(r=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:18px">${r.emoji||'📌'}</span>
+      <div style="flex:1"><div style="font-size:13px;font-weight:500">${r.title}</div><div style="font-size:11px;color:var(--accent);font-family:var(--mono)">${new Date(r.date).toLocaleDateString('de-DE',{weekday:'short',day:'numeric',month:'short'})}</div></div>
+      <button onclick="delRem(${r.id})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px">🗑️</button>
+    </div>`).join('');
+}
+
+function saveReminder(){
+  const title=document.getElementById('rem-title').value.trim(),date=document.getElementById('rem-date').value;
+  const emoji=document.getElementById('rem-emoji').value.trim()||'📌';
+  if(!title||!date)return alert('Felder ausfüllen');
+  S.reminders.push({id:Date.now(),title,date,emoji});saveS();closeModal('rem-modal');renderReminders();
+}
+
+function delRem(id){S.reminders=S.reminders.filter(r=>r.id!==id);saveS();renderReminders();}
+
+// ============================================================
+// NOTES
+// ============================================================
+function renderNotes(){
+  const el=document.getElementById('notes-list');if(!el)return;
+  const f=S.notes.filter(n=>n.cat===S.noteTab);
+  el.innerHTML=!f.length?'<div class="card-sm sm muted">Keine Notizen. Tap + Neu.</div>':[...f].reverse().map(n=>`
+    <div class="card-sm mb8">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <div style="font-size:13px;font-weight:600">${n.title}</div>
+        <button onclick="delNote(${n.id})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px">🗑️</button>
+      </div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.5">${n.body.slice(0,120)}${n.body.length>120?'...':''}</div>
+      <div style="font-size:10px;color:var(--text3);margin-top:6px;font-family:var(--mono)">${new Date(n.date).toLocaleDateString('de-DE',{day:'numeric',month:'short',year:'numeric'})}</div>
+    </div>`).join('');
+}
+
+function switchNote(tab,el){
+  S.noteTab=tab;
+  document.querySelectorAll('#s-notes .nf-pill').forEach(p=>p.classList.remove('on'));
+  el?.classList.add('on');renderNotes();
+}
+
+function saveNote(){
+  const title=document.getElementById('nm-title').value.trim(),body=document.getElementById('nm-body').value.trim();
+  const cat=document.getElementById('nm-cat').value;
+  if(!title||!body)return alert('Felder ausfüllen');
+  S.notes.push({id:Date.now(),title,body,cat,date:new Date().toISOString()});
+  saveS();closeModal('note-modal');
+  ['nm-title','nm-body'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  renderNotes();
+}
+
+function delNote(id){S.notes=S.notes.filter(n=>n.id!==id);saveS();renderNotes();}
+
+// ============================================================
+// AI MENTOR
+// ============================================================
+const SYS=`You are a personal mentor for a young man doing nursing Ausbildung in Germany. Call him "Freund" or "Bro".
+
+Facts: Baden-Württemberg, Germany. Salary €1,110/month (editable). Expenses: Rent €330, Electricity €50, DB €68, Gym €25, Food €150-200. Loan €150/month until Sep 2025, then stops. Real leftover now: ~€287-337. Exam: May 2027. Kerala, India origin. Goal: Germany till 2035, return India, ₹3 crore by 2035. Future: Wundexperte. Fitness goal: September 2025. Investor: European (DAX/Euronext) + Indian (NSE/BSE). Past wins: Chevron pre-war, TSMC/Micron/ASML on AI boom. Core values: freedom, stability, independence.
+
+Style: Denglish (German+English naturally). Direct, blunt — no sugarcoating. Trusted mentor. Push to act. Concise (mobile). Call out excuses immediately.`;
+
+let aiHistory=[];
+
+async function sendAI(){
+  const key=S.apiKey;
+  if(!key){addAIMsg('a','Kein API Key gesetzt! Geh zu ⚙️ Settings und trag deinen Anthropic API Key ein.');return;}
+  const inp=document.getElementById('ai-inp');
+  const text=inp?.value?.trim();if(!text)return;
+  inp.value='';
+  addAIMsg('u',text);
+  aiHistory.push({role:'user',content:text});
+  const typing=addTyping();
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:SYS,messages:aiHistory})
+    });
+    const data=await resp.json();
+    if(data.error)throw new Error(data.error.message);
+    const reply=data.content?.map(c=>c.text||'').join('')||'Fehler.';
+    typing.remove();addAIMsg('a',reply);
+    aiHistory.push({role:'assistant',content:reply});
+    if(aiHistory.length>20)aiHistory.splice(0,2);
+  }catch(e){typing.remove();addAIMsg('a','Error: '+e.message);}
+}
+
+function addAIMsg(role,text){
+  const wrap=document.getElementById('ai-msg-wrap');if(!wrap)return;
+  const div=document.createElement('div');div.className='msg '+role;
+  if(role==='a')div.innerHTML=`<div class="mn">MENTOR</div>${text.replace(/\n/g,'<br>')}`;
+  else div.textContent=text;
+  wrap.appendChild(div);
+  const msgs=document.getElementById('ai-msgs');if(msgs)msgs.scrollTop=msgs.scrollHeight;
+  return div;
+}
+
+function addTyping(){
+  const wrap=document.getElementById('ai-msg-wrap');if(!wrap)return{remove:()=>{}};
+  const div=document.createElement('div');div.className='msg a';
+  div.innerHTML='<div class="typing"><span></span><span></span><span></span></div>';
+  wrap.appendChild(div);
+  const msgs=document.getElementById('ai-msgs');if(msgs)msgs.scrollTop=msgs.scrollHeight;
+  return div;
+}
+
+// ============================================================
+// SETTINGS
+// ============================================================
+function renderSettings(){
+  const tog=document.getElementById('dark-toggle');if(tog)tog.classList.toggle('on',S.dark);
+  const ntog=document.getElementById('notif-toggle');if(ntog)ntog.classList.toggle('on',S.notifs);
+  const keyInp=document.getElementById('api-key-input');
+  if(keyInp&&S.apiKey)keyInp.value=S.apiKey;
+}
+
+function toggleNotif(){
+  S.notifs=!S.notifs;saveS();
+  const tog=document.getElementById('notif-toggle');if(tog)tog.classList.toggle('on',S.notifs);
+  if(S.notifs&&Notification.permission==='default')Notification.requestPermission();
+}
+
+function saveAPIKey(){
+  const key=document.getElementById('api-key-input')?.value?.trim();
+  if(!key)return alert('API Key eingeben');
+  S.apiKey=key;saveS();
+  const status=document.getElementById('api-key-status');
+  if(status){status.style.display='block';setTimeout(()=>status.style.display='none',3000);}
+}
+
+// ============================================================
+// NOTIFICATIONS
+// ============================================================
+function setupNotifications(){
+  if(!('Notification' in window))return;
+  if(Notification.permission==='default')Notification.requestPermission();
+  setInterval(()=>{
+    if(!S.notifs||Notification.permission!=='granted')return;
+    const h=new Date().getHours(),m=new Date().getMinutes();
+    if((h===10||h===22)&&m===0){
+      new Notification('LEON OS 🔔',{
+        body:h===10?'Guten Morgen! Check deine Ziele und den Finanzplan.':'Guten Abend! Kurzer Tagesabschluss — wie war der Tag?',
+        icon:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🤖</text></svg>'
+      });
+    }
+  },60000);
+}
+
+// ============================================================
+// BREAKING NEWS BANNER
+// ============================================================
+function closeBanner(){document.getElementById('breaking-banner').classList.remove('show');}
+
+function checkBreakingNews(){
+  // Simulate breaking news check — in production this would call a news API
+  const breaking=NEWS.find(n=>n.breaking);
+  if(breaking){
+    setEl('breaking-text',breaking.title);
+    document.getElementById('breaking-banner').classList.add('show');
+    setTimeout(closeBanner,12000);
+  }
+}
+
+// ============================================================
+// EXPAND TOGGLE
+// ============================================================
+function toggleExpand(contentId,arrowId){
+  const c=document.getElementById(contentId);const a=document.getElementById(arrowId);
+  if(!c)return;
+  const open=c.classList.contains('open');
+  c.classList.toggle('open',!open);
+  if(a)a.classList.toggle('open',!open);
+}
+
+// ============================================================
+// LANDSCAPE
+// ============================================================
+function checkLandscape(){
+  const isLandscape=window.innerWidth>window.innerHeight&&window.innerWidth>=768;
+  const layout=document.querySelector('.l-layout');
+  const sidebar=document.querySelector('.l-sidebar');
+  const main=document.querySelector('.l-main');
+  if(!layout||!sidebar||!main)return;
+  if(isLandscape){
+    layout.style.display='grid';
+    sidebar.style.display='flex';
+    main.style.display='block';
+    document.querySelector('.wheel-btn').style.display='none';
+  }else{
+    layout.style.display='block';
+    sidebar.style.display='none';
+    main.style.display='block';
+    document.querySelector('.wheel-btn').style.display='flex';
+  }
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function setEl(id,val){const el=document.getElementById(id);if(el)el.textContent=val;}
+function openModal(id){document.getElementById(id)?.classList.add('open');}
+function closeModal(id){document.getElementById(id)?.classList.remove('open');}
+
+// ============================================================
+// INIT
+// ============================================================
+function init(){
+  loadS();
+  autoTheme();
+  applyTheme();
+
+  const today=new Date().toISOString().split('T')[0];
+  document.querySelectorAll('input[type="date"]').forEach(el=>{if(!el.value)el.value=today;});
+
+  // Close modals on overlay click
+  document.querySelectorAll('.overlay').forEach(m=>{
+    m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');});
+  });
+
+  // Auto news refresh every 15 min
+  newsRefreshInterval=setInterval(renderNewsList,15*60*1000);
+
+  // Auto theme check every hour
+  setInterval(autoTheme,60*60*1000);
+
+  checkLandscape();
+  window.addEventListener('resize',checkLandscape);
+  window.addEventListener('orientationchange',()=>setTimeout(checkLandscape,300));
+
+  setupNotifications();
+
+  // Initial AI message
+  addAIMsg('a',`Hey Freund! 👋\n\nLEON OS v4 — clean, minimal, dein System.\n\n${S.apiKey?'API Key ist gesetzt — AI Analysis ist aktiv. ⚡':'Tipp: Geh zu ⚙️ Settings und trag deinen API Key ein für AI Analysis der Trader Signals.'}\n\nSep 2025 ist dein erster Wendepunkt — Loan stoppt, Überschuss steigt. Dann Graduation 2027 — Salary Sprung auf €2,400+. Die Projektion zeigt alles.\n\nWas ist heute dein Fokus?`);
+
+  renderHome();
+  setTimeout(checkBreakingNews,3000);
+}
+
+init();
+</script>
+</body>
+</html>
